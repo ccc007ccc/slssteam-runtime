@@ -51,6 +51,9 @@ lm_address_t MemHlp::patternScan(const char* pattern, lm_module_t targetModule)
 
 	LM_EnumSegments(enumSegments, &codeSegments);
 
+	lm_address_t address = LM_ADDRESS_BAD;
+	unsigned int matches = 0;
+
 	for(const auto& itm : codeSegments)
 	{
 		if (targetModule.base > itm.second)
@@ -90,12 +93,18 @@ lm_address_t MemHlp::patternScan(const char* pattern, lm_module_t targetModule)
 
 			if (found)
 			{
-				return cur;
+				address = cur;
+				matches++;
+
+				if (matches > 1)
+				{
+					g_pLog->debug("Pattern %s found %i times at %p!\n", pattern, matches, cur);
+				}
 			}
 		}
 	}
 
-	return LM_ADDRESS_BAD;
+	return address;
 }
 
 lm_address_t MemHlp::searchSignature(const char* name, const char* signature, lm_module_t module, SigFollowMode mode, void* extraData, size_t extraDataSize)
