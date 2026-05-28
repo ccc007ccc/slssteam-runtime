@@ -46,7 +46,7 @@ struct TableStruct_steammessages_5fbase_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxiliaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[24]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[25]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -115,6 +115,9 @@ extern CMsgProtobufWrappedDefaultTypeInternal _CMsgProtobufWrapped_default_insta
 class CPackageReservationStatus;
 struct CPackageReservationStatusDefaultTypeInternal;
 extern CPackageReservationStatusDefaultTypeInternal _CPackageReservationStatus_default_instance_;
+class GamePerformanceSettings;
+struct GamePerformanceSettingsDefaultTypeInternal;
+extern GamePerformanceSettingsDefaultTypeInternal _GamePerformanceSettings_default_instance_;
 class UserContentDescriptorPreferences;
 struct UserContentDescriptorPreferencesDefaultTypeInternal;
 extern UserContentDescriptorPreferencesDefaultTypeInternal _UserContentDescriptorPreferences_default_instance_;
@@ -146,6 +149,7 @@ template<> ::CMsgMulti* Arena::CreateMaybeMessage<::CMsgMulti>(Arena*);
 template<> ::CMsgProtoBufHeader* Arena::CreateMaybeMessage<::CMsgProtoBufHeader>(Arena*);
 template<> ::CMsgProtobufWrapped* Arena::CreateMaybeMessage<::CMsgProtobufWrapped>(Arena*);
 template<> ::CPackageReservationStatus* Arena::CreateMaybeMessage<::CPackageReservationStatus>(Arena*);
+template<> ::GamePerformanceSettings* Arena::CreateMaybeMessage<::GamePerformanceSettings>(Arena*);
 template<> ::UserContentDescriptorPreferences* Arena::CreateMaybeMessage<::UserContentDescriptorPreferences>(Arena*);
 template<> ::UserContentDescriptorPreferences_ContentDescriptor* Arena::CreateMaybeMessage<::UserContentDescriptorPreferences_ContentDescriptor>(Arena*);
 template<> ::UserSystemInformation* Arena::CreateMaybeMessage<::UserSystemInformation>(Arena*);
@@ -170,6 +174,29 @@ inline const std::string& CMsgProtoBufHeader_ESessionDisposition_Name(T enum_t_v
 }
 bool CMsgProtoBufHeader_ESessionDisposition_Parse(
     ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, CMsgProtoBufHeader_ESessionDisposition* value);
+enum GamePerformanceSettings_EGamePerformanceSetting : int {
+  GamePerformanceSettings_EGamePerformanceSetting_k_EGamePerformanceSetting_NotSet = 0,
+  GamePerformanceSettings_EGamePerformanceSetting_k_EGamePerformanceSetting_Low = 1,
+  GamePerformanceSettings_EGamePerformanceSetting_k_EGamePerformanceSetting_Medium = 2,
+  GamePerformanceSettings_EGamePerformanceSetting_k_EGamePerformanceSetting_High = 3,
+  GamePerformanceSettings_EGamePerformanceSetting_k_EGamePerformanceSetting_Ultra = 4,
+  GamePerformanceSettings_EGamePerformanceSetting_k_EGamePerformanceSetting_Custom = 5
+};
+bool GamePerformanceSettings_EGamePerformanceSetting_IsValid(int value);
+constexpr GamePerformanceSettings_EGamePerformanceSetting GamePerformanceSettings_EGamePerformanceSetting_EGamePerformanceSetting_MIN = GamePerformanceSettings_EGamePerformanceSetting_k_EGamePerformanceSetting_NotSet;
+constexpr GamePerformanceSettings_EGamePerformanceSetting GamePerformanceSettings_EGamePerformanceSetting_EGamePerformanceSetting_MAX = GamePerformanceSettings_EGamePerformanceSetting_k_EGamePerformanceSetting_Custom;
+constexpr int GamePerformanceSettings_EGamePerformanceSetting_EGamePerformanceSetting_ARRAYSIZE = GamePerformanceSettings_EGamePerformanceSetting_EGamePerformanceSetting_MAX + 1;
+
+const std::string& GamePerformanceSettings_EGamePerformanceSetting_Name(GamePerformanceSettings_EGamePerformanceSetting value);
+template<typename T>
+inline const std::string& GamePerformanceSettings_EGamePerformanceSetting_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, GamePerformanceSettings_EGamePerformanceSetting>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function GamePerformanceSettings_EGamePerformanceSetting_Name.");
+  return GamePerformanceSettings_EGamePerformanceSetting_Name(static_cast<GamePerformanceSettings_EGamePerformanceSetting>(enum_t_value));
+}
+bool GamePerformanceSettings_EGamePerformanceSetting_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, GamePerformanceSettings_EGamePerformanceSetting* value);
 enum EBanContentCheckResult : int {
   k_EBanContentCheckResult_NotScanned = 0,
   k_EBanContentCheckResult_Reset = 1,
@@ -4782,6 +4809,7 @@ class CClanEventData PROTOBUF_FINAL :
     kRtimeModReviewedFieldNumber = 26,
     kFeaturedAppTagidFieldNumber = 27,
     kBuildIdFieldNumber = 29,
+    kRtimeCreatedFieldNumber = 32,
     kEventTypeFieldNumber = 4,
   };
   // repeated uint32 referenced_appids = 28;
@@ -5230,6 +5258,19 @@ class CClanEventData PROTOBUF_FINAL :
   void _internal_set_build_id(::PROTOBUF_NAMESPACE_ID::uint32 value);
   public:
 
+  // optional uint32 rtime_created = 32;
+  bool has_rtime_created() const;
+  private:
+  bool _internal_has_rtime_created() const;
+  public:
+  void clear_rtime_created();
+  ::PROTOBUF_NAMESPACE_ID::uint32 rtime_created() const;
+  void set_rtime_created(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_rtime_created() const;
+  void _internal_set_rtime_created(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
   // optional .EProtoClanEventType event_type = 4;
   bool has_event_type() const;
   private:
@@ -5282,6 +5323,7 @@ class CClanEventData PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::uint32 rtime_mod_reviewed_;
   ::PROTOBUF_NAMESPACE_ID::uint32 featured_app_tagid_;
   ::PROTOBUF_NAMESPACE_ID::uint32 build_id_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 rtime_created_;
   int event_type_;
   friend struct ::TableStruct_steammessages_5fbase_2eproto;
 };
@@ -6652,6 +6694,7 @@ class UserSystemInformation PROTOBUF_FINAL :
     kVramSizeFieldNumber = 17,
     kScreenWidthFieldNumber = 18,
     kScreenHeightFieldNumber = 19,
+    kPreciseFrameRateFieldNumber = 20,
   };
   // optional string manufacturer = 1;
   bool has_manufacturer() const;
@@ -6957,6 +7000,19 @@ class UserSystemInformation PROTOBUF_FINAL :
   void _internal_set_screen_height(::PROTOBUF_NAMESPACE_ID::uint32 value);
   public:
 
+  // optional bool precise_frame_rate = 20;
+  bool has_precise_frame_rate() const;
+  private:
+  bool _internal_has_precise_frame_rate() const;
+  public:
+  void clear_precise_frame_rate();
+  bool precise_frame_rate() const;
+  void set_precise_frame_rate(bool value);
+  private:
+  bool _internal_precise_frame_rate() const;
+  void _internal_set_precise_frame_rate(bool value);
+  public:
+
   // @@protoc_insertion_point(class_scope:UserSystemInformation)
  private:
   class _Internal;
@@ -6984,6 +7040,206 @@ class UserSystemInformation PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::uint32 vram_size_;
   ::PROTOBUF_NAMESPACE_ID::uint32 screen_width_;
   ::PROTOBUF_NAMESPACE_ID::uint32 screen_height_;
+  bool precise_frame_rate_;
+  friend struct ::TableStruct_steammessages_5fbase_2eproto;
+};
+// -------------------------------------------------------------------
+
+class GamePerformanceSettings PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::MessageLite /* @@protoc_insertion_point(class_definition:GamePerformanceSettings) */ {
+ public:
+  inline GamePerformanceSettings() : GamePerformanceSettings(nullptr) {}
+  virtual ~GamePerformanceSettings();
+  explicit constexpr GamePerformanceSettings(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  GamePerformanceSettings(const GamePerformanceSettings& from);
+  GamePerformanceSettings(GamePerformanceSettings&& from) noexcept
+    : GamePerformanceSettings() {
+    *this = ::std::move(from);
+  }
+
+  inline GamePerformanceSettings& operator=(const GamePerformanceSettings& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline GamePerformanceSettings& operator=(GamePerformanceSettings&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const std::string& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<std::string>(::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString);
+  }
+  inline std::string* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<std::string>();
+  }
+
+  static const GamePerformanceSettings& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const GamePerformanceSettings* internal_default_instance() {
+    return reinterpret_cast<const GamePerformanceSettings*>(
+               &_GamePerformanceSettings_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    24;
+
+  friend void swap(GamePerformanceSettings& a, GamePerformanceSettings& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(GamePerformanceSettings* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(GamePerformanceSettings* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline GamePerformanceSettings* New() const final {
+    return CreateMaybeMessage<GamePerformanceSettings>(nullptr);
+  }
+
+  GamePerformanceSettings* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<GamePerformanceSettings>(arena);
+  }
+  void CheckTypeAndMergeFrom(const ::PROTOBUF_NAMESPACE_ID::MessageLite& from)
+    final;
+  void CopyFrom(const GamePerformanceSettings& from);
+  void MergeFrom(const GamePerformanceSettings& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  void DiscardUnknownFields();
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(GamePerformanceSettings* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "GamePerformanceSettings";
+  }
+  protected:
+  explicit GamePerformanceSettings(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  std::string GetTypeName() const final;
+
+  // nested types ----------------------------------------------------
+
+  typedef GamePerformanceSettings_EGamePerformanceSetting EGamePerformanceSetting;
+  static constexpr EGamePerformanceSetting k_EGamePerformanceSetting_NotSet =
+    GamePerformanceSettings_EGamePerformanceSetting_k_EGamePerformanceSetting_NotSet;
+  static constexpr EGamePerformanceSetting k_EGamePerformanceSetting_Low =
+    GamePerformanceSettings_EGamePerformanceSetting_k_EGamePerformanceSetting_Low;
+  static constexpr EGamePerformanceSetting k_EGamePerformanceSetting_Medium =
+    GamePerformanceSettings_EGamePerformanceSetting_k_EGamePerformanceSetting_Medium;
+  static constexpr EGamePerformanceSetting k_EGamePerformanceSetting_High =
+    GamePerformanceSettings_EGamePerformanceSetting_k_EGamePerformanceSetting_High;
+  static constexpr EGamePerformanceSetting k_EGamePerformanceSetting_Ultra =
+    GamePerformanceSettings_EGamePerformanceSetting_k_EGamePerformanceSetting_Ultra;
+  static constexpr EGamePerformanceSetting k_EGamePerformanceSetting_Custom =
+    GamePerformanceSettings_EGamePerformanceSetting_k_EGamePerformanceSetting_Custom;
+  static inline bool EGamePerformanceSetting_IsValid(int value) {
+    return GamePerformanceSettings_EGamePerformanceSetting_IsValid(value);
+  }
+  static constexpr EGamePerformanceSetting EGamePerformanceSetting_MIN =
+    GamePerformanceSettings_EGamePerformanceSetting_EGamePerformanceSetting_MIN;
+  static constexpr EGamePerformanceSetting EGamePerformanceSetting_MAX =
+    GamePerformanceSettings_EGamePerformanceSetting_EGamePerformanceSetting_MAX;
+  static constexpr int EGamePerformanceSetting_ARRAYSIZE =
+    GamePerformanceSettings_EGamePerformanceSetting_EGamePerformanceSetting_ARRAYSIZE;
+  template<typename T>
+  static inline const std::string& EGamePerformanceSetting_Name(T enum_t_value) {
+    static_assert(::std::is_same<T, EGamePerformanceSetting>::value ||
+      ::std::is_integral<T>::value,
+      "Incorrect type passed to function EGamePerformanceSetting_Name.");
+    return GamePerformanceSettings_EGamePerformanceSetting_Name(enum_t_value);
+  }
+  static inline bool EGamePerformanceSetting_Parse(::PROTOBUF_NAMESPACE_ID::ConstStringParam name,
+      EGamePerformanceSetting* value) {
+    return GamePerformanceSettings_EGamePerformanceSetting_Parse(name, value);
+  }
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kSettingFieldNumber = 1,
+    kGameResolutionWidthFieldNumber = 2,
+    kGameResolutionHeightFieldNumber = 3,
+  };
+  // optional .GamePerformanceSettings.EGamePerformanceSetting setting = 1;
+  bool has_setting() const;
+  private:
+  bool _internal_has_setting() const;
+  public:
+  void clear_setting();
+  ::GamePerformanceSettings_EGamePerformanceSetting setting() const;
+  void set_setting(::GamePerformanceSettings_EGamePerformanceSetting value);
+  private:
+  ::GamePerformanceSettings_EGamePerformanceSetting _internal_setting() const;
+  void _internal_set_setting(::GamePerformanceSettings_EGamePerformanceSetting value);
+  public:
+
+  // optional uint32 game_resolution_width = 2;
+  bool has_game_resolution_width() const;
+  private:
+  bool _internal_has_game_resolution_width() const;
+  public:
+  void clear_game_resolution_width();
+  ::PROTOBUF_NAMESPACE_ID::uint32 game_resolution_width() const;
+  void set_game_resolution_width(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_game_resolution_width() const;
+  void _internal_set_game_resolution_width(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // optional uint32 game_resolution_height = 3;
+  bool has_game_resolution_height() const;
+  private:
+  bool _internal_has_game_resolution_height() const;
+  public:
+  void clear_game_resolution_height();
+  ::PROTOBUF_NAMESPACE_ID::uint32 game_resolution_height() const;
+  void set_game_resolution_height(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_game_resolution_height() const;
+  void _internal_set_game_resolution_height(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:GamePerformanceSettings)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  int setting_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 game_resolution_width_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 game_resolution_height_;
   friend struct ::TableStruct_steammessages_5fbase_2eproto;
 };
 // ===================================================================
@@ -12743,7 +12999,7 @@ inline void CClanEventData::set_allocated_event_name(std::string* event_name) {
 
 // optional .EProtoClanEventType event_type = 4;
 inline bool CClanEventData::_internal_has_event_type() const {
-  bool value = (_has_bits_[0] & 0x20000000u) != 0;
+  bool value = (_has_bits_[0] & 0x40000000u) != 0;
   return value;
 }
 inline bool CClanEventData::has_event_type() const {
@@ -12751,7 +13007,7 @@ inline bool CClanEventData::has_event_type() const {
 }
 inline void CClanEventData::clear_event_type() {
   event_type_ = 1;
-  _has_bits_[0] &= ~0x20000000u;
+  _has_bits_[0] &= ~0x40000000u;
 }
 inline ::EProtoClanEventType CClanEventData::_internal_event_type() const {
   return static_cast< ::EProtoClanEventType >(event_type_);
@@ -12762,7 +13018,7 @@ inline ::EProtoClanEventType CClanEventData::event_type() const {
 }
 inline void CClanEventData::_internal_set_event_type(::EProtoClanEventType value) {
   assert(::EProtoClanEventType_IsValid(value));
-  _has_bits_[0] |= 0x20000000u;
+  _has_bits_[0] |= 0x40000000u;
   event_type_ = value;
 }
 inline void CClanEventData::set_event_type(::EProtoClanEventType value) {
@@ -13823,6 +14079,34 @@ inline void CClanEventData::_internal_set_unlisted(bool value) {
 inline void CClanEventData::set_unlisted(bool value) {
   _internal_set_unlisted(value);
   // @@protoc_insertion_point(field_set:CClanEventData.unlisted)
+}
+
+// optional uint32 rtime_created = 32;
+inline bool CClanEventData::_internal_has_rtime_created() const {
+  bool value = (_has_bits_[0] & 0x20000000u) != 0;
+  return value;
+}
+inline bool CClanEventData::has_rtime_created() const {
+  return _internal_has_rtime_created();
+}
+inline void CClanEventData::clear_rtime_created() {
+  rtime_created_ = 0u;
+  _has_bits_[0] &= ~0x20000000u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 CClanEventData::_internal_rtime_created() const {
+  return rtime_created_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 CClanEventData::rtime_created() const {
+  // @@protoc_insertion_point(field_get:CClanEventData.rtime_created)
+  return _internal_rtime_created();
+}
+inline void CClanEventData::_internal_set_rtime_created(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _has_bits_[0] |= 0x20000000u;
+  rtime_created_ = value;
+}
+inline void CClanEventData::set_rtime_created(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_rtime_created(value);
+  // @@protoc_insertion_point(field_set:CClanEventData.rtime_created)
 }
 
 // -------------------------------------------------------------------
@@ -16198,9 +16482,128 @@ inline void UserSystemInformation::set_screen_height(::PROTOBUF_NAMESPACE_ID::ui
   // @@protoc_insertion_point(field_set:UserSystemInformation.screen_height)
 }
 
+// optional bool precise_frame_rate = 20;
+inline bool UserSystemInformation::_internal_has_precise_frame_rate() const {
+  bool value = (_has_bits_[0] & 0x00040000u) != 0;
+  return value;
+}
+inline bool UserSystemInformation::has_precise_frame_rate() const {
+  return _internal_has_precise_frame_rate();
+}
+inline void UserSystemInformation::clear_precise_frame_rate() {
+  precise_frame_rate_ = false;
+  _has_bits_[0] &= ~0x00040000u;
+}
+inline bool UserSystemInformation::_internal_precise_frame_rate() const {
+  return precise_frame_rate_;
+}
+inline bool UserSystemInformation::precise_frame_rate() const {
+  // @@protoc_insertion_point(field_get:UserSystemInformation.precise_frame_rate)
+  return _internal_precise_frame_rate();
+}
+inline void UserSystemInformation::_internal_set_precise_frame_rate(bool value) {
+  _has_bits_[0] |= 0x00040000u;
+  precise_frame_rate_ = value;
+}
+inline void UserSystemInformation::set_precise_frame_rate(bool value) {
+  _internal_set_precise_frame_rate(value);
+  // @@protoc_insertion_point(field_set:UserSystemInformation.precise_frame_rate)
+}
+
+// -------------------------------------------------------------------
+
+// GamePerformanceSettings
+
+// optional .GamePerformanceSettings.EGamePerformanceSetting setting = 1;
+inline bool GamePerformanceSettings::_internal_has_setting() const {
+  bool value = (_has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline bool GamePerformanceSettings::has_setting() const {
+  return _internal_has_setting();
+}
+inline void GamePerformanceSettings::clear_setting() {
+  setting_ = 0;
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline ::GamePerformanceSettings_EGamePerformanceSetting GamePerformanceSettings::_internal_setting() const {
+  return static_cast< ::GamePerformanceSettings_EGamePerformanceSetting >(setting_);
+}
+inline ::GamePerformanceSettings_EGamePerformanceSetting GamePerformanceSettings::setting() const {
+  // @@protoc_insertion_point(field_get:GamePerformanceSettings.setting)
+  return _internal_setting();
+}
+inline void GamePerformanceSettings::_internal_set_setting(::GamePerformanceSettings_EGamePerformanceSetting value) {
+  assert(::GamePerformanceSettings_EGamePerformanceSetting_IsValid(value));
+  _has_bits_[0] |= 0x00000001u;
+  setting_ = value;
+}
+inline void GamePerformanceSettings::set_setting(::GamePerformanceSettings_EGamePerformanceSetting value) {
+  _internal_set_setting(value);
+  // @@protoc_insertion_point(field_set:GamePerformanceSettings.setting)
+}
+
+// optional uint32 game_resolution_width = 2;
+inline bool GamePerformanceSettings::_internal_has_game_resolution_width() const {
+  bool value = (_has_bits_[0] & 0x00000002u) != 0;
+  return value;
+}
+inline bool GamePerformanceSettings::has_game_resolution_width() const {
+  return _internal_has_game_resolution_width();
+}
+inline void GamePerformanceSettings::clear_game_resolution_width() {
+  game_resolution_width_ = 0u;
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 GamePerformanceSettings::_internal_game_resolution_width() const {
+  return game_resolution_width_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 GamePerformanceSettings::game_resolution_width() const {
+  // @@protoc_insertion_point(field_get:GamePerformanceSettings.game_resolution_width)
+  return _internal_game_resolution_width();
+}
+inline void GamePerformanceSettings::_internal_set_game_resolution_width(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _has_bits_[0] |= 0x00000002u;
+  game_resolution_width_ = value;
+}
+inline void GamePerformanceSettings::set_game_resolution_width(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_game_resolution_width(value);
+  // @@protoc_insertion_point(field_set:GamePerformanceSettings.game_resolution_width)
+}
+
+// optional uint32 game_resolution_height = 3;
+inline bool GamePerformanceSettings::_internal_has_game_resolution_height() const {
+  bool value = (_has_bits_[0] & 0x00000004u) != 0;
+  return value;
+}
+inline bool GamePerformanceSettings::has_game_resolution_height() const {
+  return _internal_has_game_resolution_height();
+}
+inline void GamePerformanceSettings::clear_game_resolution_height() {
+  game_resolution_height_ = 0u;
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 GamePerformanceSettings::_internal_game_resolution_height() const {
+  return game_resolution_height_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 GamePerformanceSettings::game_resolution_height() const {
+  // @@protoc_insertion_point(field_get:GamePerformanceSettings.game_resolution_height)
+  return _internal_game_resolution_height();
+}
+inline void GamePerformanceSettings::_internal_set_game_resolution_height(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _has_bits_[0] |= 0x00000004u;
+  game_resolution_height_ = value;
+}
+inline void GamePerformanceSettings::set_game_resolution_height(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_game_resolution_height(value);
+  // @@protoc_insertion_point(field_set:GamePerformanceSettings.game_resolution_height)
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
@@ -16254,6 +16657,7 @@ inline void UserSystemInformation::set_screen_height(::PROTOBUF_NAMESPACE_ID::ui
 PROTOBUF_NAMESPACE_OPEN
 
 template <> struct is_proto_enum< ::CMsgProtoBufHeader_ESessionDisposition> : ::std::true_type {};
+template <> struct is_proto_enum< ::GamePerformanceSettings_EGamePerformanceSetting> : ::std::true_type {};
 template <> struct is_proto_enum< ::EBanContentCheckResult> : ::std::true_type {};
 template <> struct is_proto_enum< ::EProtoClanEventType> : ::std::true_type {};
 template <> struct is_proto_enum< ::PartnerEventNotificationType> : ::std::true_type {};

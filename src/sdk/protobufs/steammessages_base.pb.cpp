@@ -363,6 +363,7 @@ constexpr CClanEventData::CClanEventData(
   , rtime_mod_reviewed_(0u)
   , featured_app_tagid_(0u)
   , build_id_(0u)
+  , rtime_created_(0u)
   , event_type_(1)
 {}
 struct CClanEventDataDefaultTypeInternal {
@@ -487,7 +488,8 @@ constexpr UserSystemInformation::UserSystemInformation(
   , gaming_device_type_(0u)
   , vram_size_(0u)
   , screen_width_(0u)
-  , screen_height_(0u){}
+  , screen_height_(0u)
+  , precise_frame_rate_(false){}
 struct UserSystemInformationDefaultTypeInternal {
   constexpr UserSystemInformationDefaultTypeInternal()
     : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
@@ -497,6 +499,21 @@ struct UserSystemInformationDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT UserSystemInformationDefaultTypeInternal _UserSystemInformation_default_instance_;
+constexpr GamePerformanceSettings::GamePerformanceSettings(
+  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
+  : setting_(0)
+
+  , game_resolution_width_(0u)
+  , game_resolution_height_(0u){}
+struct GamePerformanceSettingsDefaultTypeInternal {
+  constexpr GamePerformanceSettingsDefaultTypeInternal()
+    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
+  ~GamePerformanceSettingsDefaultTypeInternal() {}
+  union {
+    GamePerformanceSettings _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT GamePerformanceSettingsDefaultTypeInternal _GamePerformanceSettings_default_instance_;
 bool CMsgProtoBufHeader_ESessionDisposition_IsValid(int value) {
   switch (value) {
     case 0:
@@ -554,6 +571,84 @@ constexpr CMsgProtoBufHeader_ESessionDisposition CMsgProtoBufHeader::k_ESessionD
 constexpr CMsgProtoBufHeader_ESessionDisposition CMsgProtoBufHeader::ESessionDisposition_MIN;
 constexpr CMsgProtoBufHeader_ESessionDisposition CMsgProtoBufHeader::ESessionDisposition_MAX;
 constexpr int CMsgProtoBufHeader::ESessionDisposition_ARRAYSIZE;
+#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || _MSC_VER >= 1900)
+bool GamePerformanceSettings_EGamePerformanceSetting_IsValid(int value) {
+  switch (value) {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+      return true;
+    default:
+      return false;
+  }
+}
+
+static ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<std::string> GamePerformanceSettings_EGamePerformanceSetting_strings[6] = {};
+
+static const char GamePerformanceSettings_EGamePerformanceSetting_names[] =
+  "k_EGamePerformanceSetting_Custom"
+  "k_EGamePerformanceSetting_High"
+  "k_EGamePerformanceSetting_Low"
+  "k_EGamePerformanceSetting_Medium"
+  "k_EGamePerformanceSetting_NotSet"
+  "k_EGamePerformanceSetting_Ultra";
+
+static const ::PROTOBUF_NAMESPACE_ID::internal::EnumEntry GamePerformanceSettings_EGamePerformanceSetting_entries[] = {
+  { {GamePerformanceSettings_EGamePerformanceSetting_names + 0, 32}, 5 },
+  { {GamePerformanceSettings_EGamePerformanceSetting_names + 32, 30}, 3 },
+  { {GamePerformanceSettings_EGamePerformanceSetting_names + 62, 29}, 1 },
+  { {GamePerformanceSettings_EGamePerformanceSetting_names + 91, 32}, 2 },
+  { {GamePerformanceSettings_EGamePerformanceSetting_names + 123, 32}, 0 },
+  { {GamePerformanceSettings_EGamePerformanceSetting_names + 155, 31}, 4 },
+};
+
+static const int GamePerformanceSettings_EGamePerformanceSetting_entries_by_number[] = {
+  4, // 0 -> k_EGamePerformanceSetting_NotSet
+  2, // 1 -> k_EGamePerformanceSetting_Low
+  3, // 2 -> k_EGamePerformanceSetting_Medium
+  1, // 3 -> k_EGamePerformanceSetting_High
+  5, // 4 -> k_EGamePerformanceSetting_Ultra
+  0, // 5 -> k_EGamePerformanceSetting_Custom
+};
+
+const std::string& GamePerformanceSettings_EGamePerformanceSetting_Name(
+    GamePerformanceSettings_EGamePerformanceSetting value) {
+  static const bool dummy =
+      ::PROTOBUF_NAMESPACE_ID::internal::InitializeEnumStrings(
+          GamePerformanceSettings_EGamePerformanceSetting_entries,
+          GamePerformanceSettings_EGamePerformanceSetting_entries_by_number,
+          6, GamePerformanceSettings_EGamePerformanceSetting_strings);
+  (void) dummy;
+  int idx = ::PROTOBUF_NAMESPACE_ID::internal::LookUpEnumName(
+      GamePerformanceSettings_EGamePerformanceSetting_entries,
+      GamePerformanceSettings_EGamePerformanceSetting_entries_by_number,
+      6, value);
+  return idx == -1 ? ::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString() :
+                     GamePerformanceSettings_EGamePerformanceSetting_strings[idx].get();
+}
+bool GamePerformanceSettings_EGamePerformanceSetting_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, GamePerformanceSettings_EGamePerformanceSetting* value) {
+  int int_value;
+  bool success = ::PROTOBUF_NAMESPACE_ID::internal::LookUpEnumValue(
+      GamePerformanceSettings_EGamePerformanceSetting_entries, 6, name, &int_value);
+  if (success) {
+    *value = static_cast<GamePerformanceSettings_EGamePerformanceSetting>(int_value);
+  }
+  return success;
+}
+#if (__cplusplus < 201703) && (!defined(_MSC_VER) || _MSC_VER >= 1900)
+constexpr GamePerformanceSettings_EGamePerformanceSetting GamePerformanceSettings::k_EGamePerformanceSetting_NotSet;
+constexpr GamePerformanceSettings_EGamePerformanceSetting GamePerformanceSettings::k_EGamePerformanceSetting_Low;
+constexpr GamePerformanceSettings_EGamePerformanceSetting GamePerformanceSettings::k_EGamePerformanceSetting_Medium;
+constexpr GamePerformanceSettings_EGamePerformanceSetting GamePerformanceSettings::k_EGamePerformanceSetting_High;
+constexpr GamePerformanceSettings_EGamePerformanceSetting GamePerformanceSettings::k_EGamePerformanceSetting_Ultra;
+constexpr GamePerformanceSettings_EGamePerformanceSetting GamePerformanceSettings::k_EGamePerformanceSetting_Custom;
+constexpr GamePerformanceSettings_EGamePerformanceSetting GamePerformanceSettings::EGamePerformanceSetting_MIN;
+constexpr GamePerformanceSettings_EGamePerformanceSetting GamePerformanceSettings::EGamePerformanceSetting_MAX;
+constexpr int GamePerformanceSettings::EGamePerformanceSetting_ARRAYSIZE;
 #endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || _MSC_VER >= 1900)
 bool EBanContentCheckResult_IsValid(int value) {
   switch (value) {
@@ -7930,7 +8025,7 @@ class CClanEventData::_Internal {
     (*has_bits)[0] |= 1u;
   }
   static void set_has_event_type(HasBits* has_bits) {
-    (*has_bits)[0] |= 536870912u;
+    (*has_bits)[0] |= 1073741824u;
   }
   static void set_has_appid(HasBits* has_bits) {
     (*has_bits)[0] |= 512u;
@@ -8011,6 +8106,9 @@ class CClanEventData::_Internal {
   static void set_has_unlisted(HasBits* has_bits) {
     (*has_bits)[0] |= 2097152u;
   }
+  static void set_has_rtime_created(HasBits* has_bits) {
+    (*has_bits)[0] |= 536870912u;
+  }
 };
 
 const ::CCommunity_ClanAnnouncementInfo&
@@ -8079,8 +8177,8 @@ jsondata_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlr
 build_branch_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&announcement_body_) - reinterpret_cast<char*>(this)),
-    0, static_cast<size_t>(reinterpret_cast<char*>(&build_id_) -
-    reinterpret_cast<char*>(&announcement_body_)) + sizeof(build_id_));
+    0, static_cast<size_t>(reinterpret_cast<char*>(&rtime_created_) -
+    reinterpret_cast<char*>(&announcement_body_)) + sizeof(rtime_created_));
 event_type_ = 1;
 }
 
@@ -8154,10 +8252,10 @@ void CClanEventData::Clear() {
         reinterpret_cast<char*>(&forum_topic_id_) -
         reinterpret_cast<char*>(&rtime32_visibility_end_)) + sizeof(forum_topic_id_));
   }
-  if (cached_has_bits & 0x3f000000u) {
+  if (cached_has_bits & 0x7f000000u) {
     ::memset(&news_post_gid_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&build_id_) -
-        reinterpret_cast<char*>(&news_post_gid_)) + sizeof(build_id_));
+        reinterpret_cast<char*>(&rtime_created_) -
+        reinterpret_cast<char*>(&news_post_gid_)) + sizeof(rtime_created_));
     event_type_ = 1;
   }
   _has_bits_.Clear();
@@ -8430,6 +8528,14 @@ const char* CClanEventData::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
+      // optional uint32 rtime_created = 32;
+      case 32:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 0)) {
+          _Internal::set_has_rtime_created(&has_bits);
+          rtime_created_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -8479,7 +8585,7 @@ failure:
   }
 
   // optional .EProtoClanEventType event_type = 4;
-  if (cached_has_bits & 0x20000000u) {
+  if (cached_has_bits & 0x40000000u) {
     target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteEnumToArray(
       4, this->_internal_event_type(), target);
@@ -8647,6 +8753,12 @@ failure:
   if (cached_has_bits & 0x00200000u) {
     target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBoolToArray(31, this->_internal_unlisted(), target);
+  }
+
+  // optional uint32 rtime_created = 32;
+  if (cached_has_bits & 0x20000000u) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt32ToArray(32, this->_internal_rtime_created(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -8833,7 +8945,7 @@ size_t CClanEventData::ByteSizeLong() const {
     }
 
   }
-  if (cached_has_bits & 0x3f000000u) {
+  if (cached_has_bits & 0x7f000000u) {
     // optional fixed64 news_post_gid = 25;
     if (cached_has_bits & 0x01000000u) {
       total_size += 2 + 8;
@@ -8867,8 +8979,15 @@ size_t CClanEventData::ByteSizeLong() const {
           this->_internal_build_id());
     }
 
-    // optional .EProtoClanEventType event_type = 4;
+    // optional uint32 rtime_created = 32;
     if (cached_has_bits & 0x20000000u) {
+      total_size += 2 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt32Size(
+          this->_internal_rtime_created());
+    }
+
+    // optional .EProtoClanEventType event_type = 4;
+    if (cached_has_bits & 0x40000000u) {
       total_size += 1 +
         ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::EnumSize(this->_internal_event_type());
     }
@@ -8978,7 +9097,7 @@ void CClanEventData::MergeFrom(const CClanEventData& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-  if (cached_has_bits & 0x3f000000u) {
+  if (cached_has_bits & 0x7f000000u) {
     if (cached_has_bits & 0x01000000u) {
       news_post_gid_ = from.news_post_gid_;
     }
@@ -8995,6 +9114,9 @@ void CClanEventData::MergeFrom(const CClanEventData& from) {
       build_id_ = from.build_id_;
     }
     if (cached_has_bits & 0x20000000u) {
+      rtime_created_ = from.rtime_created_;
+    }
+    if (cached_has_bits & 0x40000000u) {
       event_type_ = from.event_type_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -9024,8 +9146,8 @@ void CClanEventData::InternalSwap(CClanEventData* other) {
   jsondata_.Swap(&other->jsondata_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   build_branch_.Swap(&other->build_branch_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(CClanEventData, build_id_)
-      + sizeof(CClanEventData::build_id_)
+      PROTOBUF_FIELD_OFFSET(CClanEventData, rtime_created_)
+      + sizeof(CClanEventData::rtime_created_)
       - PROTOBUF_FIELD_OFFSET(CClanEventData, announcement_body_)>(
           reinterpret_cast<char*>(&announcement_body_),
           reinterpret_cast<char*>(&other->announcement_body_));
@@ -10992,6 +11114,9 @@ class UserSystemInformation::_Internal {
   static void set_has_screen_height(HasBits* has_bits) {
     (*has_bits)[0] |= 131072u;
   }
+  static void set_has_precise_frame_rate(HasBits* has_bits) {
+    (*has_bits)[0] |= 262144u;
+  }
 };
 
 UserSystemInformation::UserSystemInformation(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -11055,8 +11180,8 @@ UserSystemInformation::UserSystemInformation(const UserSystemInformation& from)
       GetArena());
   }
   ::memcpy(&dx_vendorid_, &from.dx_vendorid_,
-    static_cast<size_t>(reinterpret_cast<char*>(&screen_height_) -
-    reinterpret_cast<char*>(&dx_vendorid_)) + sizeof(screen_height_));
+    static_cast<size_t>(reinterpret_cast<char*>(&precise_frame_rate_) -
+    reinterpret_cast<char*>(&dx_vendorid_)) + sizeof(precise_frame_rate_));
   // @@protoc_insertion_point(copy_constructor:UserSystemInformation)
 }
 
@@ -11073,8 +11198,8 @@ driver_version_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStr
 driver_date_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&dx_vendorid_) - reinterpret_cast<char*>(this)),
-    0, static_cast<size_t>(reinterpret_cast<char*>(&screen_height_) -
-    reinterpret_cast<char*>(&dx_vendorid_)) + sizeof(screen_height_));
+    0, static_cast<size_t>(reinterpret_cast<char*>(&precise_frame_rate_) -
+    reinterpret_cast<char*>(&dx_vendorid_)) + sizeof(precise_frame_rate_));
 }
 
 UserSystemInformation::~UserSystemInformation() {
@@ -11153,10 +11278,10 @@ void UserSystemInformation::Clear() {
         reinterpret_cast<char*>(&vram_size_) -
         reinterpret_cast<char*>(&dx_vendorid_)) + sizeof(vram_size_));
   }
-  if (cached_has_bits & 0x00030000u) {
+  if (cached_has_bits & 0x00070000u) {
     ::memset(&screen_width_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&screen_height_) -
-        reinterpret_cast<char*>(&screen_width_)) + sizeof(screen_height_));
+        reinterpret_cast<char*>(&precise_frame_rate_) -
+        reinterpret_cast<char*>(&screen_width_)) + sizeof(precise_frame_rate_));
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear<std::string>();
@@ -11314,6 +11439,14 @@ const char* UserSystemInformation::_InternalParse(const char* ptr, ::PROTOBUF_NA
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
+      // optional bool precise_frame_rate = 20;
+      case 20:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 160)) {
+          _Internal::set_has_precise_frame_rate(&has_bits);
+          precise_frame_rate_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -11452,6 +11585,12 @@ failure:
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt32ToArray(19, this->_internal_screen_height(), target);
   }
 
+  // optional bool precise_frame_rate = 20;
+  if (cached_has_bits & 0x00040000u) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBoolToArray(20, this->_internal_precise_frame_rate(), target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = stream->WriteRaw(_internal_metadata_.unknown_fields<std::string>(::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString).data(),
         static_cast<int>(_internal_metadata_.unknown_fields<std::string>(::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString).size()), target);
@@ -11585,7 +11724,7 @@ size_t UserSystemInformation::ByteSizeLong() const {
     }
 
   }
-  if (cached_has_bits & 0x00030000u) {
+  if (cached_has_bits & 0x00070000u) {
     // optional uint32 screen_width = 18;
     if (cached_has_bits & 0x00010000u) {
       total_size += 2 +
@@ -11598,6 +11737,11 @@ size_t UserSystemInformation::ByteSizeLong() const {
       total_size += 2 +
         ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt32Size(
           this->_internal_screen_height());
+    }
+
+    // optional bool precise_frame_rate = 20;
+    if (cached_has_bits & 0x00040000u) {
+      total_size += 2 + 1;
     }
 
   }
@@ -11676,12 +11820,15 @@ void UserSystemInformation::MergeFrom(const UserSystemInformation& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-  if (cached_has_bits & 0x00030000u) {
+  if (cached_has_bits & 0x00070000u) {
     if (cached_has_bits & 0x00010000u) {
       screen_width_ = from.screen_width_;
     }
     if (cached_has_bits & 0x00020000u) {
       screen_height_ = from.screen_height_;
+    }
+    if (cached_has_bits & 0x00040000u) {
+      precise_frame_rate_ = from.precise_frame_rate_;
     }
     _has_bits_[0] |= cached_has_bits;
   }
@@ -11713,8 +11860,8 @@ void UserSystemInformation::InternalSwap(UserSystemInformation* other) {
   driver_version_.Swap(&other->driver_version_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   driver_date_.Swap(&other->driver_date_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(UserSystemInformation, screen_height_)
-      + sizeof(UserSystemInformation::screen_height_)
+      PROTOBUF_FIELD_OFFSET(UserSystemInformation, precise_frame_rate_)
+      + sizeof(UserSystemInformation::precise_frame_rate_)
       - PROTOBUF_FIELD_OFFSET(UserSystemInformation, dx_vendorid_)>(
           reinterpret_cast<char*>(&dx_vendorid_),
           reinterpret_cast<char*>(&other->dx_vendorid_));
@@ -11722,6 +11869,269 @@ void UserSystemInformation::InternalSwap(UserSystemInformation* other) {
 
 std::string UserSystemInformation::GetTypeName() const {
   return "UserSystemInformation";
+}
+
+
+// ===================================================================
+
+class GamePerformanceSettings::_Internal {
+ public:
+  using HasBits = decltype(std::declval<GamePerformanceSettings>()._has_bits_);
+  static void set_has_setting(HasBits* has_bits) {
+    (*has_bits)[0] |= 1u;
+  }
+  static void set_has_game_resolution_width(HasBits* has_bits) {
+    (*has_bits)[0] |= 2u;
+  }
+  static void set_has_game_resolution_height(HasBits* has_bits) {
+    (*has_bits)[0] |= 4u;
+  }
+};
+
+GamePerformanceSettings::GamePerformanceSettings(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::MessageLite(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:GamePerformanceSettings)
+}
+GamePerformanceSettings::GamePerformanceSettings(const GamePerformanceSettings& from)
+  : ::PROTOBUF_NAMESPACE_ID::MessageLite(),
+      _has_bits_(from._has_bits_) {
+  _internal_metadata_.MergeFrom<std::string>(from._internal_metadata_);
+  ::memcpy(&setting_, &from.setting_,
+    static_cast<size_t>(reinterpret_cast<char*>(&game_resolution_height_) -
+    reinterpret_cast<char*>(&setting_)) + sizeof(game_resolution_height_));
+  // @@protoc_insertion_point(copy_constructor:GamePerformanceSettings)
+}
+
+void GamePerformanceSettings::SharedCtor() {
+::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
+    reinterpret_cast<char*>(&setting_) - reinterpret_cast<char*>(this)),
+    0, static_cast<size_t>(reinterpret_cast<char*>(&game_resolution_height_) -
+    reinterpret_cast<char*>(&setting_)) + sizeof(game_resolution_height_));
+}
+
+GamePerformanceSettings::~GamePerformanceSettings() {
+  // @@protoc_insertion_point(destructor:GamePerformanceSettings)
+  SharedDtor();
+  _internal_metadata_.Delete<std::string>();
+}
+
+void GamePerformanceSettings::SharedDtor() {
+  GOOGLE_DCHECK(GetArena() == nullptr);
+}
+
+void GamePerformanceSettings::ArenaDtor(void* object) {
+  GamePerformanceSettings* _this = reinterpret_cast< GamePerformanceSettings* >(object);
+  (void)_this;
+}
+void GamePerformanceSettings::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void GamePerformanceSettings::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+
+void GamePerformanceSettings::Clear() {
+// @@protoc_insertion_point(message_clear_start:GamePerformanceSettings)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 0x00000007u) {
+    ::memset(&setting_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&game_resolution_height_) -
+        reinterpret_cast<char*>(&setting_)) + sizeof(game_resolution_height_));
+  }
+  _has_bits_.Clear();
+  _internal_metadata_.Clear<std::string>();
+}
+
+const char* GamePerformanceSettings::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  _Internal::HasBits has_bits{};
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // optional .GamePerformanceSettings.EGamePerformanceSetting setting = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+          if (PROTOBUF_PREDICT_TRUE(::GamePerformanceSettings_EGamePerformanceSetting_IsValid(val))) {
+            _internal_set_setting(static_cast<::GamePerformanceSettings_EGamePerformanceSetting>(val));
+          } else {
+            ::PROTOBUF_NAMESPACE_ID::internal::WriteVarint(1, val, mutable_unknown_fields());
+          }
+        } else goto handle_unusual;
+        continue;
+      // optional uint32 game_resolution_width = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
+          _Internal::set_has_game_resolution_width(&has_bits);
+          game_resolution_width_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional uint32 game_resolution_height = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
+          _Internal::set_has_game_resolution_height(&has_bits);
+          game_resolution_height_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<std::string>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  _has_bits_.Or(has_bits);
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* GamePerformanceSettings::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:GamePerformanceSettings)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional .GamePerformanceSettings.EGamePerformanceSetting setting = 1;
+  if (cached_has_bits & 0x00000001u) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteEnumToArray(
+      1, this->_internal_setting(), target);
+  }
+
+  // optional uint32 game_resolution_width = 2;
+  if (cached_has_bits & 0x00000002u) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt32ToArray(2, this->_internal_game_resolution_width(), target);
+  }
+
+  // optional uint32 game_resolution_height = 3;
+  if (cached_has_bits & 0x00000004u) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt32ToArray(3, this->_internal_game_resolution_height(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = stream->WriteRaw(_internal_metadata_.unknown_fields<std::string>(::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString).data(),
+        static_cast<int>(_internal_metadata_.unknown_fields<std::string>(::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString).size()), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:GamePerformanceSettings)
+  return target;
+}
+
+size_t GamePerformanceSettings::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:GamePerformanceSettings)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 0x00000007u) {
+    // optional .GamePerformanceSettings.EGamePerformanceSetting setting = 1;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::EnumSize(this->_internal_setting());
+    }
+
+    // optional uint32 game_resolution_width = 2;
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt32Size(
+          this->_internal_game_resolution_width());
+    }
+
+    // optional uint32 game_resolution_height = 3;
+    if (cached_has_bits & 0x00000004u) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt32Size(
+          this->_internal_game_resolution_height());
+    }
+
+  }
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    total_size += _internal_metadata_.unknown_fields<std::string>(::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString).size();
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void GamePerformanceSettings::CheckTypeAndMergeFrom(
+    const ::PROTOBUF_NAMESPACE_ID::MessageLite& from) {
+  MergeFrom(*::PROTOBUF_NAMESPACE_ID::internal::DownCast<const GamePerformanceSettings*>(
+      &from));
+}
+
+void GamePerformanceSettings::MergeFrom(const GamePerformanceSettings& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:GamePerformanceSettings)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<std::string>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 0x00000007u) {
+    if (cached_has_bits & 0x00000001u) {
+      setting_ = from.setting_;
+    }
+    if (cached_has_bits & 0x00000002u) {
+      game_resolution_width_ = from.game_resolution_width_;
+    }
+    if (cached_has_bits & 0x00000004u) {
+      game_resolution_height_ = from.game_resolution_height_;
+    }
+    _has_bits_[0] |= cached_has_bits;
+  }
+}
+
+void GamePerformanceSettings::CopyFrom(const GamePerformanceSettings& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:GamePerformanceSettings)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool GamePerformanceSettings::IsInitialized() const {
+  return true;
+}
+
+void GamePerformanceSettings::InternalSwap(GamePerformanceSettings* other) {
+  using std::swap;
+  _internal_metadata_.Swap<std::string>(&other->_internal_metadata_);
+  swap(_has_bits_[0], other->_has_bits_[0]);
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(GamePerformanceSettings, game_resolution_height_)
+      + sizeof(GamePerformanceSettings::game_resolution_height_)
+      - PROTOBUF_FIELD_OFFSET(GamePerformanceSettings, setting_)>(
+          reinterpret_cast<char*>(&setting_),
+          reinterpret_cast<char*>(&other->setting_));
+}
+
+std::string GamePerformanceSettings::GetTypeName() const {
+  return "GamePerformanceSettings";
 }
 
 
@@ -11798,6 +12208,9 @@ template<> PROTOBUF_NOINLINE ::UserContentDescriptorPreferences* Arena::CreateMa
 }
 template<> PROTOBUF_NOINLINE ::UserSystemInformation* Arena::CreateMaybeMessage< ::UserSystemInformation >(Arena* arena) {
   return Arena::CreateMessageInternal< ::UserSystemInformation >(arena);
+}
+template<> PROTOBUF_NOINLINE ::GamePerformanceSettings* Arena::CreateMaybeMessage< ::GamePerformanceSettings >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::GamePerformanceSettings >(arena);
 }
 PROTOBUF_NAMESPACE_CLOSE
 
