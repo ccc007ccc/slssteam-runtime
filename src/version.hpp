@@ -3,4 +3,4 @@
 #include <cstdint>
 
 
-constexpr uint64_t VERSION = 20260528151547;
+constexpr uint64_t VERSION = 20260624075231;
