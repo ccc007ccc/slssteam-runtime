@@ -185,7 +185,7 @@ public:
 	bool isAddedAppId(uint32_t appId);
 	bool addAdditionalAppId(uint32_t appId);
 
-	bool shouldExcludeAppId(uint32_t appId);
+	bool shouldExcludeAppId(uint32_t appId, bool ignoreAdditionalApps = false);
 	uint32_t getDenuvoGameOwner(uint32_t appId);
 };
 

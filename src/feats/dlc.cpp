@@ -3,21 +3,24 @@
 #include "../sdk/CAppOwnershipInfo.hpp"
 #include "../sdk/CSteamEngine.hpp"
 #include "../sdk/CUser.hpp"
-#include "../sdk/IClientUtils.hpp"
 
 #include "../config.hpp"
 
 #include "apps.hpp"
+#include "fakeappid.hpp"
 
 
 bool DLC::shouldUnlockDlc(uint32_t appId)
 {
-	if (!g_pClientUtils->getAppId())
+	if (g_config.shouldExcludeAppId(appId))
 	{
 		return false;
 	}
 
-	if (g_config.shouldExcludeAppId(appId))
+	uint32_t pipeAppId = FakeAppIds::getRealAppIdForCurrentPipe();
+	//Don't unlock inside the SteamClient (AppId 0)
+	//Enable blacklisting whole games
+	if (!pipeAppId || g_config.shouldExcludeAppId(pipeAppId, true))
 	{
 		return false;
 	}

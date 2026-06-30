@@ -289,7 +289,7 @@ bool CConfig::isAddedAppId(uint32_t appId)
 	return addedAppIds.get().contains(appId);
 }
 
-bool CConfig::shouldExcludeAppId(uint32_t appId)
+bool CConfig::shouldExcludeAppId(uint32_t appId, bool ignoreAdditionalApps)
 {
 	bool exclude = false;
 	//Proper way would be with getAppType, but that seems broken so we need to do this instead
@@ -301,7 +301,7 @@ bool CConfig::shouldExcludeAppId(uint32_t appId)
 	else
 	{
 		bool found = appIds.get().contains(appId);
-		exclude = !isAddedAppId(appId) && ((useWhiteList.get() && !found) || (!useWhiteList.get() && found));
+		exclude = (!isAddedAppId(appId) || ignoreAdditionalApps) && ((useWhiteList.get() && !found) || (!useWhiteList.get() && found));
 	}
 
 	g_pLog->once("shouldExcludeAppId(%u) -> %i\n", appId, exclude);
