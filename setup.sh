@@ -48,7 +48,7 @@ install_wrapper()
 		return 1
 	fi
 
-	echo -e "#!/bin/sh\n$SLSAUDIT \"$FPATH\"" > "$SLSPATH/$EXE"
+	echo -e "#!/bin/sh\n$SLSAUDIT \"$FPATH\"" > "$SLSPATH/$EXE" '$@'
 
 	chmod u+x "$SLSPATH/$EXE"
 
