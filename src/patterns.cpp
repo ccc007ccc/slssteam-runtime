@@ -171,7 +171,7 @@ namespace Patterns
 		Pattern_t RunIPCFrame
 		{
 			"IClientAppManager::RunIPCFrame",
-			"FF B5 ? ? ? ? 50 8D 86 ? ? ? ? 68 90 09 00 00",
+			"E8 ? ? ? ? 8B 85 ? ? ? ? 83 C4 10 3D ? 85 0A 7A",
 			SigFollowMode::PrologueUpwards,
 			std::vector<uint8_t> { 0x56, 0x57, 0xe5, 0x89, 0x55 }
 		};
@@ -189,7 +189,7 @@ namespace Patterns
 		Pattern_t RunIPCFrame
 		{
 			"IClientApps::RunIPCFrame",
-			"E8 ? ? ? ? 8B 85 ? ? ? ? 83 C4 10 3D 37 9C 88 A6",
+			"E8 ? ? ? ? 8B 85 ? ? ? ? 83 C4 10 3D ? 9C 88 A6",
 			SigFollowMode::PrologueUpwards,
 			std::vector<uint8_t> { 0x56, 0x57, 0xe5, 0x89, 0x55 }
 		};
@@ -200,7 +200,7 @@ namespace Patterns
 		Pattern_t RunIPCFrame
 		{
 			"IClientRemoteStorage::RunIPCFrame",
-			"E8 ? ? ? ? 8B 85 ? ? ? ? 83 C4 10 3D 6C E8 2F 87",
+			"E8 ? ? ? ? 8B 85 ? ? ? ? 83 C4 10 3D ? E8 2F 87",
 			SigFollowMode::PrologueUpwards,
 			std::vector<uint8_t> { 0x56, 0x57, 0xe5, 0x89, 0x55 }
 		};
@@ -211,7 +211,7 @@ namespace Patterns
 		Pattern_t RunIPCFrame
 		{
 			"IClientUser::RunIPCFrame",
-			"E8 ? ? ? ? 8B 85 ? ? ? ? 83 C4 10 3D 10 A3 86 73",
+			"E8 ? ? ? ? 8B 85 ? ? ? ? 83 C4 10 3D ? A3 86 73",
 			SigFollowMode::PrologueUpwards,
 			std::vector<uint8_t> { 0x56, 0x57, 0xe5, 0x89, 0x55 }
 		};
@@ -252,7 +252,7 @@ namespace Patterns
 		Pattern_t RequiresLegacyCDKey
 		{
 			"IClientUser::RequiresLegacyCDKey",
-			"75 ? 83 C4 1C 31 C0 5B 5E 5F 5D C3 ? ? ? ? ? 8B 44 24 ? 83 C4 1C 89 F9 89 F2 5B 5E 5F 5D 2D D4 18 00 00",
+			"75 ? 83 C4 1C 31 C0 5B 5E 5F 5D C3 ? ? ? ? ? 8B 44 24 ? 83 C4 1C 89 F9 89 F2 5B 5E 5F 5D 2D ? ? 00 00",
 			SigFollowMode::PrologueUpwards,
 			std::vector<uint8_t> { 0x53, 0x56, 0x57, 0x55 }
 		};
@@ -263,7 +263,7 @@ namespace Patterns
 		Pattern_t RunIPCFrame
 		{
 			"IClientUGC::RunIPCFrame",
-			"E8 ? ? ? ? 8B 85 ? ? ? ? 83 C4 10 3D 62 0C D2 71",
+			"E8 ? ? ? ? 8B 85 ? ? ? ? 83 C4 10 3D ? 0C D2 71",
 			SigFollowMode::PrologueUpwards,
 			std::vector<uint8_t> { 0x56, 0x57, 0xe5, 0x89, 0x55 }
 		};
@@ -274,7 +274,7 @@ namespace Patterns
 		Pattern_t RunIPCFrame
 		{
 			"IClientUserStats::RunIPCFrame",
-			"E8 ? ? ? ? 8B 85 ? ? ? ? 83 C4 10 3D 8F 65 6D 87",
+			"E8 ? ? ? ? 8B 85 ? ? ? ? 83 C4 10 3D ? 65 6D 87",
 			SigFollowMode::PrologueUpwards,
 			std::vector<uint8_t> { 0x56, 0x57, 0xe5, 0x89, 0x55 }
 		};
@@ -285,7 +285,7 @@ namespace Patterns
 		Pattern_t RunIPCFrame
 		{
 			"IClientUtils::RunIPCFrame",
-			"83 EC 08 89 F3 50 57 E8 ? ? ? ? 58 FF B5 ? ? ? ? E8 ? ? ? ? 58 8D 45",
+			"E8 ? ? ? ? 8B 85 ? ? ? ? 83 C4 10 3D ? BF 7D 82",
 			SigFollowMode::PrologueUpwards,
 			std::vector<uint8_t> { 0x56, 0x57, 0xe5, 0x89, 0x55 }
 		};
