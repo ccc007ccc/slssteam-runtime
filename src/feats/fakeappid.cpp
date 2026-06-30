@@ -32,6 +32,11 @@ uint32_t FakeAppIds::getFakeAppId(uint32_t appId)
 
 uint32_t FakeAppIds::getRealAppIdForCurrentPipe(bool fallback)
 {
+	if (!g_pClientUtils)
+	{
+		return 0;
+	}
+
 	uint32_t hPipe = *g_pClientUtils->getPipeIndex();
 	if (fakeAppIdMap.contains(hPipe))
 	{
