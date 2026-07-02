@@ -6,6 +6,7 @@
 #include "../sdk/CUser.hpp"
 #include "../sdk/EReleaseState.hpp"
 #include "../sdk/IClientApps.hpp"
+#include "../sdk/IClientAppManager.hpp"
 
 #include "../config.hpp"
 #include "../globals.hpp"
@@ -142,6 +143,28 @@ void Apps::getSubscribedApps(uint32_t* appList, size_t size, uint32_t& count)
 	}
 
 	applistRequested = true;
+}
+
+void Apps::getAppStateInfo(uint32_t appId, AppStateInfo_t* info)
+{
+	if (!info)
+	{
+		return;
+	}
+
+	if (!Apps::shouldDisableUpdates(appId))
+	{
+		return;
+	}
+	
+	info->state &= ~APPSTATE_UPDATE_OPTIONAL;
+	info->state &= ~APPSTATE_UPDATE_PAUSED;
+	info->state &= ~APPSTATE_UPDATE_QUEUED;
+	info->state &= ~APPSTATE_UPDATE_REQUIRED;
+	info->state &= ~APPSTATE_UPDATE_RUNNING;
+	info->state &= ~APPSTATE_UPDATE_STARTED;
+
+	g_pLog->once("Disabled updates for %u!\n", appId);
 }
 
 bool Apps::shouldDisableCloud(uint32_t appId)

@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-enum EAppState : int
+enum EAppState : uint32_t
 {
 	APPSTATE_INVALID = 0x0,
 	APPSTATE_UNINSTALLED = 0x1,
@@ -26,6 +26,13 @@ enum EAppState : int
 	APPSTATE_PEER_SERVER = 0x40000,
 	APPSTATE_UPDATED_DISABLED_BY_APP = 0x80000,
 };
+
+struct AppStateInfo_t
+{
+	char __pad0x0[0x8];		//0x0
+	uint32_t state;			//0x8
+	char __pad_0xC[0x4];    //0xC
+}; //0x10
 
 class IClientAppManager
 {
