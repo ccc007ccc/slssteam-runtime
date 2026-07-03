@@ -38,6 +38,7 @@ class IClientAppManager
 {
 public:
 	bool installApp(uint32_t appId, uint32_t librarIndex);
+	uint32_t uninstallApp(uint32_t appId);
 	EAppState getAppInstallState(uint32_t appId);
 };
 

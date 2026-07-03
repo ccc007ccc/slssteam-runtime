@@ -7,7 +7,6 @@
 #include "utils.hpp"
 
 #include <ios>
-#include <iterator>
 #include <mutex>
 
 
@@ -17,8 +16,9 @@ namespace SLSAPI
 	std::fstream fstream;
 	CFileWatcher* watcher;
 
-	std::mutex installsMutex;
+	std::mutex executionMutex;
 	std::vector<InstallCommand_t> installs;
+	std::vector<uint32_t> uninstalls;
 }
 
 bool SLSAPI::isEnabled()
@@ -51,12 +51,26 @@ void SLSAPI::onFileChange()
 			uint32_t appId = std::strtoul(split[1].c_str(), nullptr, 10);
 			uint32_t library = std::strtoul(split[2].c_str(), nullptr, 10);
 
-			std::lock_guard guard(installsMutex);
+			std::lock_guard guard(executionMutex);
 			installs.emplace_back(InstallCommand_t { appId, library } );
 		}
 		catch(...)
 		{
 			g_pLog->info("API Failed to parse %s or %s!\n", split[1].c_str(), split[2].c_str());
+		}
+	}
+	else if (strcmp(split[0].c_str(), "uninstall") == 0 && split.size() > 1)
+	{
+		try
+		{
+			uint32_t appId = std::strtoul(split[1].c_str(), nullptr, 10);
+
+			std::lock_guard guard(executionMutex);
+			uninstalls.emplace_back(appId);
+		}
+		catch(...)
+		{
+			g_pLog->info("API Failed to parse %s!\n", split[1].c_str());
 		}
 	}
 }
@@ -74,7 +88,12 @@ void SLSAPI::init()
 
 void SLSAPI::runIPCFrame()
 {
-	std::lock_guard guard(installsMutex);
+	if (!installs.size() && !uninstalls.size()) //No need to lock mutex when no commands are queued
+	{
+		return;
+	}
+
+	std::lock_guard guard(executionMutex);
 
 	while(installs.size())
 	{
@@ -83,5 +102,14 @@ void SLSAPI::runIPCFrame()
 		installs.erase(app);
 
 		g_pLog->debug("Installed %u to %u\n", app->appId, app->libraryIndex);
+	}
+
+	while(uninstalls.size())
+	{
+		const auto app = uninstalls.begin();
+		g_pClientAppManager->uninstallApp(*app);
+		uninstalls.erase(app);
+
+		g_pLog->debug("Uninstalled %u\n", *app);
 	}
 }

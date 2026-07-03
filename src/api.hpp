@@ -20,8 +20,9 @@ namespace SLSAPI
 	extern std::fstream fstream;
 	extern CFileWatcher* watcher;
 
-	extern std::mutex installsMutex;
+	extern std::mutex executionMutex;
 	extern std::vector<InstallCommand_t> installs;
+	extern std::vector<uint32_t> uninstalls;
 
 	bool isEnabled();
 	void onFileChange();
