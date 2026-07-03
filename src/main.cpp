@@ -65,7 +65,7 @@ static bool cleanEnvVar(const char* varName, const char* endsWith)
 //__attribute__((noreturn))
 static void unload()
 {
-	Hooks::remove();
+	//Hooks::remove();
 
 	//This is absolutely unnessecary for applications loading SLSsteam where it cancels from setup()
 	//Would be nice to run have for failed load() attempts though 
