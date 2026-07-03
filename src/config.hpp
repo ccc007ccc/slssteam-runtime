@@ -69,6 +69,8 @@ public:
 	MTVariable<unsigned int> logLevel;
 	MTVariable<bool> extendedLogging;
 
+	MTVariable<bool> reloadApps;
+
 	//Using incomplete class to avoid runtime linking errors
 	CFileWatcher* watcher;
 

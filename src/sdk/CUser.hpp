@@ -10,12 +10,26 @@ enum class ECallbackType : uint32_t
 {
 	LicensesUpdate_t = 0x7d,
 	AppOwnershipTicketReceived_t = 0xf907c,
+	AppLicensesChanged_t = 0xf90be
 };
 
 struct AppOwnershipTicketReceived_t
 {
 	EResult result;
 	uint32_t appId;
+};
+
+struct AppLicensesChanged_t
+{
+	static constexpr unsigned int MAX_APPS_PER_CALLBACK = 0x40;
+
+	bool reloadAll;
+	bool firstLoad;
+	uint8_t __pad_0x2[0x2];
+	uint32_t remainingPackets;
+	uint32_t count;
+	uint32_t apps[MAX_APPS_PER_CALLBACK];
+	uint32_t appsAdded;
 };
 
 class CUser

@@ -13,8 +13,9 @@
 
 #include "fakeappid.hpp"
 
+#include <cmath>
+
 bool Apps::applistRequested;
-std::map<uint32_t, int> Apps::appIdOwnerOverride;
 
 bool Apps::unlockApp(uint32_t appId, CAppOwnershipInfo* info, uint32_t ownerId)
 {
@@ -167,6 +168,48 @@ void Apps::getAppStateInfo(uint32_t appId, AppStateInfo_t* info)
 	g_pLog->once("Disabled updates for %u!\n", appId);
 }
 
+void Apps::runIPCFrame()
+{
+	if (!g_config.reloadApps.get())
+	{
+		return;
+	}
+
+	if (!g_pClientApps)
+	{
+		return;
+	}
+
+	const auto added = g_config.addedAppIds.get();
+
+	//Max batch of 15, otherwise not all apps will get a response which means they won't get added
+	constexpr unsigned int MAX_APPS_PER_REQUEST = 15;
+	uint32_t apps[MAX_APPS_PER_REQUEST] { };
+
+	unsigned int i = 0;
+	for(; i < added.size(); i++)
+	{
+		const unsigned int idx = i % MAX_APPS_PER_REQUEST;
+		apps[idx] = *std::next(added.begin(), i);
+
+		g_pLog->debug("AppInfoRequest %u -> %u from (%i)\n", idx, apps[idx], i);
+
+		if (idx + 1 >= MAX_APPS_PER_REQUEST)
+		{
+			g_pClientApps->requestAppInfoUpdate(apps, MAX_APPS_PER_REQUEST);
+			memset(apps, 0, sizeof(apps));
+		}
+	}
+
+	const unsigned int idx = i % MAX_APPS_PER_REQUEST;
+	if (apps[0])
+	{
+		g_pClientApps->requestAppInfoUpdate(apps, idx);
+	}
+
+	g_config.reloadApps = false;
+}
+
 bool Apps::shouldDisableCloud(uint32_t appId)
 {
 	if (!g_config.disableCloud.get())
@@ -186,6 +229,47 @@ bool Apps::shouldDisableUpdates(uint32_t appId)
 {
 	//Using AdditionalApps here aswell so users can manually block updates
 	return g_config.isAddedAppId(appId) || !g_pSteamEngine->getUser(0)->isSubscribed(appId);
+}
+
+void Apps::recvPICSInfoResponse(CMsgClientPICSProductInfoResponse* msg)
+{
+	const auto user = g_pSteamEngine->getUser(0);
+
+	AppLicensesChanged_t cb { };
+
+	unsigned int totalPackets = std::floor(msg->apps_size() / AppLicensesChanged_t::MAX_APPS_PER_CALLBACK);
+
+	for(int i = 0; i < msg->apps_size(); i++)
+	{
+		unsigned int idx = i % AppLicensesChanged_t::MAX_APPS_PER_CALLBACK;
+		cb.apps[idx] = msg->apps(i).appid();
+		cb.count = idx + 1;
+		cb.remainingPackets = totalPackets;
+
+		g_pLog->debug("AppLicensesChanged_t.apps[%u] -> %u (i -> %i, packets left -> %i)\n", idx, cb.apps[idx], i, totalPackets);
+
+		if (idx + 1 >= AppLicensesChanged_t::MAX_APPS_PER_CALLBACK)
+		{
+			user->postCallback(ECallbackType::AppLicensesChanged_t, &cb, sizeof(cb));
+			totalPackets--;
+			memset(&cb, 0, sizeof(cb));
+		}
+	}
+
+	if (cb.count)
+	{
+		user->postCallback(ECallbackType::AppLicensesChanged_t, &cb, sizeof(cb));
+	}
+}
+
+void Apps::recvMsg(CProtoBufMsgBase* msg)
+{
+	switch(msg->type)
+	{
+		case EMSG_PICS_PRODUCTINFO_RESPONSE:
+			recvPICSInfoResponse(msg->getBody<CMsgClientPICSProductInfoResponse>());
+			break;
+	}
 }
 
 void Apps::sendGamesPlayed(CMsgClientGamesPlayed* msg)

@@ -32,6 +32,17 @@ uint32_t IClientApps::getAppDataSection(uint32_t appId, EAppInfoSection section,
 	);
 }
 
+bool IClientApps::requestAppInfoUpdate(uint32_t* appIds, uint32_t numAppIds)
+{
+	return MemHlp::callVFunc<bool(*)(void*, uint32_t*, uint32_t)>
+	(
+		VFTIndexes::IClientApps::RequestAppInfoUpdate,
+		this,
+		appIds,
+		numAppIds
+	);
+}
+
 EAppType IClientApps::getAppType(uint32_t appId)
 {
 	return MemHlp::callVFunc<EAppType(*)(void*, uint32_t)>(VFTIndexes::IClientApps::GetAppType, this, appId);

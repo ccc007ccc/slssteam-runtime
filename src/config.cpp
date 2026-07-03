@@ -3,9 +3,9 @@
 #include "config_default.hpp"
 #include "filewatcher.hpp"
 #include "log.hpp"
+
 #include "yaml-cpp/yaml.h"
 
-#include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -70,6 +70,8 @@ bool CConfig::createFile()
 static void onFileChange()
 {
 	g_config.loadSettings();
+	g_config.reloadApps = true;
+	g_pLog->notify("Config reloaded!");
 }
 
 bool CConfig::init()

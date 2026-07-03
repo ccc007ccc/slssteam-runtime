@@ -195,6 +195,7 @@ static void hkProtoBufMsgBase_InitFromPacket(CProtoBufMsgBase* pMsg, void* pSrc)
 
 	g_pLog->debug("Received ProtoBufMsg of type %u with type %s\n", pMsg->type, MemHlp::getTypeName(pMsg));
 
+	Apps::recvMsg(pMsg);
 	Achievements::recvMessage(pMsg);
 	Misc::recvMsg(pMsg);
 	Ticket::recvMsg(pMsg);
@@ -643,6 +644,7 @@ static void hkClientUtils_RunIPCFrame(void* pClientUtils, void* a1, void* a2, vo
 	}
 
 	Hooks::IClientUtils_RunIPCFrame.tramp.fn(pClientUtils, a1, a2, a3);
+	Apps::runIPCFrame();
 }
 
 static bool hkClientUser_BLoggedOn(void* pClientUser)
