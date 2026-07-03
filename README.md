@@ -53,4 +53,4 @@ Feel free to join our [Discord](https://discord.gg/j3ZzjeV4eQ) instead.
 
 [h3adcr-b](https://github.com/Deadboy666/h3adcr-b): Universal SLSsteam installer & steamclient downgrader
 
-[steamnetsock-patch](https://github.com/yesyes0649/steamnetsock-patch): Makes FakeAppIds work in some games where it otherwise wouldn't
+[steamnetsock-patch](https://github.com/yesyes0649/steamnetsock-patch) & [eos-proxy](https://github.com/yesyes0649/eos-proxy): Makes FakeAppIds work in some games where it otherwise wouldn't
