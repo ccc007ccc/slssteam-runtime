@@ -1,5 +1,6 @@
 #include "hooks.hpp"
 
+#include "api.hpp"
 #include "config.hpp"
 #include "globals.hpp"
 #include "log.hpp"
@@ -645,6 +646,7 @@ static void hkClientUtils_RunIPCFrame(void* pClientUtils, void* a1, void* a2, vo
 
 	Hooks::IClientUtils_RunIPCFrame.tramp.fn(pClientUtils, a1, a2, a3);
 	Apps::runIPCFrame();
+	SLSAPI::runIPCFrame();
 }
 
 static bool hkClientUser_BLoggedOn(void* pClientUser)

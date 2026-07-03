@@ -7,6 +7,8 @@
 #include "utils.hpp"
 
 #include <ios>
+#include <iterator>
+#include <mutex>
 
 
 namespace SLSAPI
@@ -14,6 +16,9 @@ namespace SLSAPI
 	const char* path = "/tmp/SLSsteam.API";
 	std::fstream fstream;
 	CFileWatcher* watcher;
+
+	std::mutex installsMutex;
+	std::vector<InstallCommand_t> installs;
 }
 
 bool SLSAPI::isEnabled()
@@ -46,15 +51,8 @@ void SLSAPI::onFileChange()
 			uint32_t appId = std::strtoul(split[1].c_str(), nullptr, 10);
 			uint32_t library = std::strtoul(split[2].c_str(), nullptr, 10);
 
-			if (!g_pClientAppManager)
-			{
-				g_pLog->info("API g_pClientAppManager is nullptr! Aborting...\n");
-				return;
-			}
-
-			g_pLog->info("API Installing %s to %s\n", split[1].c_str(), split[2].c_str());
-
-			g_pClientAppManager->installApp(appId, library);
+			std::lock_guard guard(installsMutex);
+			installs.emplace_back(InstallCommand_t { appId, library } );
 		}
 		catch(...)
 		{
@@ -72,4 +70,18 @@ void SLSAPI::init()
 	watcher->start();
 
 	g_pLog->debug("SLSsteam API initialized!\n");
+}
+
+void SLSAPI::runIPCFrame()
+{
+	std::lock_guard guard(installsMutex);
+
+	while(installs.size())
+	{
+		const auto app = installs.begin();
+		g_pClientAppManager->installApp(app->appId, app->libraryIndex);
+		installs.erase(app);
+
+		g_pLog->debug("Installed %u to %u\n", app->appId, app->libraryIndex);
+	}
 }
