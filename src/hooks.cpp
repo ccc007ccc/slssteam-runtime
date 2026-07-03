@@ -184,6 +184,23 @@ static uint32_t hkCAPIJob_GetPlayerStats(void* pAPIJob)
 	return res;
 }
 
+static uint32_t hkAppDataCache_BParseResponseFromMessage(void* pAppDataCache, CProtoBufMsgBase* pMsg)
+{
+	const uint32_t ret = Hooks::CAppDataCache_BParseResponseFromMessage.tramp.fn(pAppDataCache, pMsg);
+	g_pLog->debug
+	(
+		"%s(%p, %p) -> %i\n",
+		Patterns::CAppDataCache::BParseResponseMessage.name.c_str(),
+		pAppDataCache,
+		pMsg,
+		ret
+	);
+
+	Apps::parseProductInfoFromResponse(pMsg->getBody<CMsgClientPICSProductInfoResponse>());
+
+	return ret;
+}
+
 static void hkProtoBufMsgBase_InitFromPacket(CProtoBufMsgBase* pMsg, void* pSrc)
 {
 	Hooks::CProtoBufMsgBase_InitFromPacket.tramp.fn(pMsg, pSrc);
@@ -196,7 +213,6 @@ static void hkProtoBufMsgBase_InitFromPacket(CProtoBufMsgBase* pMsg, void* pSrc)
 
 	g_pLog->debug("Received ProtoBufMsg of type %u with type %s\n", pMsg->type, MemHlp::getTypeName(pMsg));
 
-	Apps::recvMsg(pMsg);
 	Achievements::recvMessage(pMsg);
 	Misc::recvMsg(pMsg);
 	Ticket::recvMsg(pMsg);
@@ -951,6 +967,8 @@ namespace Hooks
 
 	DetourHook<CAPIJob_GetPlayerStats_t> CAPIJob_GetPlayerStats;
 
+	DetourHook<CAppDataCache_BParseResponseFromMessage_t> CAppDataCache_BParseResponseFromMessage;
+
 	DetourHook<CProtoBufMsgBase_InitFromPacket_t> CProtoBufMsgBase_InitFromPacket;
 	DetourHook<CProtoBufMsgBase_Send_t> CProtoBufMsgBase_Send;
 
@@ -1004,6 +1022,8 @@ bool Hooks::setup()
 
 		&& CAPIJob_GetPlayerStats.setup(Patterns::CAPIJob::GetPlayerStats, &hkCAPIJob_GetPlayerStats)
 
+		&& CAppDataCache_BParseResponseFromMessage.setup(Patterns::CAppDataCache::BParseResponseMessage, &hkAppDataCache_BParseResponseFromMessage)
+
 		&& CProtoBufMsgBase_InitFromPacket.setup(Patterns::CProtoBufMsgBase::InitFromPacket, &hkProtoBufMsgBase_InitFromPacket)
 		&& CProtoBufMsgBase_Send.setup(Patterns::CProtoBufMsgBase::Send, &hkProtoBufMsgBase_Send)
 
@@ -1053,6 +1073,8 @@ void Hooks::place()
 
 	CAPIJob_GetPlayerStats.place();
 
+	CAppDataCache_BParseResponseFromMessage.place();
+
 	CProtoBufMsgBase_InitFromPacket.place();
 	CProtoBufMsgBase_Send.place();
 
@@ -1093,6 +1115,8 @@ void Hooks::remove()
 	TraceIPC.remove();
 
 	CAPIJob_GetPlayerStats.remove();
+
+	CAppDataCache_BParseResponseFromMessage.place();
 
 	CProtoBufMsgBase_InitFromPacket.remove();
 	CProtoBufMsgBase_Send.remove();

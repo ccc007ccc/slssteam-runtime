@@ -82,6 +82,16 @@ namespace Patterns
 		};
 	}
 
+	namespace CAppDataCache
+	{
+		Pattern_t BParseResponseMessage
+		{
+			"CAppDataCache::BParseResponseMessage",
+			"E8 ? ? ? ? 89 C6 83 C4 ? 84 C0 75 ? 31 F6 8B 45 80",
+			SigFollowMode::Relative
+		};
+	}
+
 	namespace CProtoBufMsgBase
 	{
 		Pattern_t InitFromPacket

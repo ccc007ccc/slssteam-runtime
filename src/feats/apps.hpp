@@ -21,13 +21,11 @@ namespace Apps
 	void getSubscribedApps(uint32_t* appList, uint32_t size, uint32_t& count);
 	void getAppStateInfo(uint32_t appId, AppStateInfo_t* info);
 	void runIPCFrame();
+	void parseProductInfoFromResponse(CMsgClientPICSProductInfoResponse* msg);
 
 	bool shouldDisableCloud(uint32_t appId);
 	bool shouldDisableCDKey(uint32_t appId);
 	bool shouldDisableUpdates(uint32_t appId);
-
-	void recvPICSInfoResponse(CMsgClientPICSProductInfoResponse* msg);
-	void recvMsg(CProtoBufMsgBase* msg);
 
 	void sendGamesPlayed(CMsgClientGamesPlayed* msg);
 	void sendPICSInfoRequest(CMsgClientPICSProductInfoRequest* msg);

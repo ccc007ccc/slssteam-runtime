@@ -210,28 +210,7 @@ void Apps::runIPCFrame()
 	g_config.reloadApps = false;
 }
 
-bool Apps::shouldDisableCloud(uint32_t appId)
-{
-	if (!g_config.disableCloud.get())
-	{
-		return false;
-	}
-
-	return !g_pSteamEngine->getUser(0)->isSubscribed(appId);
-}
-
-bool Apps::shouldDisableCDKey(uint32_t appId)
-{
-	return !g_pSteamEngine->getUser(0)->isSubscribed(appId);
-}
-
-bool Apps::shouldDisableUpdates(uint32_t appId)
-{
-	//Using AdditionalApps here aswell so users can manually block updates
-	return g_config.isAddedAppId(appId) || !g_pSteamEngine->getUser(0)->isSubscribed(appId);
-}
-
-void Apps::recvPICSInfoResponse(CMsgClientPICSProductInfoResponse* msg)
+void Apps::parseProductInfoFromResponse(CMsgClientPICSProductInfoResponse* msg)
 {
 	const auto user = g_pSteamEngine->getUser(0);
 
@@ -262,14 +241,25 @@ void Apps::recvPICSInfoResponse(CMsgClientPICSProductInfoResponse* msg)
 	}
 }
 
-void Apps::recvMsg(CProtoBufMsgBase* msg)
+bool Apps::shouldDisableCloud(uint32_t appId)
 {
-	switch(msg->type)
+	if (!g_config.disableCloud.get())
 	{
-		case EMSG_PICS_PRODUCTINFO_RESPONSE:
-			recvPICSInfoResponse(msg->getBody<CMsgClientPICSProductInfoResponse>());
-			break;
+		return false;
 	}
+
+	return !g_pSteamEngine->getUser(0)->isSubscribed(appId);
+}
+
+bool Apps::shouldDisableCDKey(uint32_t appId)
+{
+	return !g_pSteamEngine->getUser(0)->isSubscribed(appId);
+}
+
+bool Apps::shouldDisableUpdates(uint32_t appId)
+{
+	//Using AdditionalApps here aswell so users can manually block updates
+	return g_config.isAddedAppId(appId) || !g_pSteamEngine->getUser(0)->isSubscribed(appId);
 }
 
 void Apps::sendGamesPlayed(CMsgClientGamesPlayed* msg)

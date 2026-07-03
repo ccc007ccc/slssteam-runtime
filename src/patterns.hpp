@@ -38,6 +38,11 @@ namespace Patterns
 		extern Pattern_t GetPlayerStats;
 	}
 
+	namespace CAppDataCache
+	{
+		extern Pattern_t BParseResponseMessage;
+	}
+
 	namespace CProtoBufMsgBase
 	{
 		extern Pattern_t InitFromPacket;
