@@ -20,8 +20,8 @@ namespace Apps
 	bool checkAppOwnership(uint32_t appId, CAppOwnershipInfo* info);
 	void getSubscribedApps(uint32_t* appList, uint32_t size, uint32_t& count);
 	void getAppStateInfo(uint32_t appId, AppStateInfo_t* info);
-	void runIPCFrame();
 	void parseProductInfoFromResponse(CMsgClientPICSProductInfoResponse* msg);
+	void runIPCFrame();
 
 	bool shouldDisableCloud(uint32_t appId);
 	bool shouldDisableCDKey(uint32_t appId);

@@ -168,6 +168,37 @@ void Apps::getAppStateInfo(uint32_t appId, AppStateInfo_t* info)
 	g_pLog->once("Disabled updates for %u!\n", appId);
 }
 
+void Apps::parseProductInfoFromResponse(CMsgClientPICSProductInfoResponse* msg)
+{
+	const auto user = g_pSteamEngine->getUser(0);
+
+	AppLicensesChanged_t cb { };
+
+	unsigned int totalPackets = std::floor(msg->apps_size() / AppLicensesChanged_t::MAX_APPS_PER_CALLBACK);
+
+	for(int i = 0; i < msg->apps_size(); i++)
+	{
+		unsigned int idx = i % AppLicensesChanged_t::MAX_APPS_PER_CALLBACK;
+		cb.apps[idx] = msg->apps(i).appid();
+		cb.count = idx + 1;
+		cb.remainingPackets = totalPackets;
+
+		g_pLog->debug("AppLicensesChanged_t.apps[%u] -> %u (i -> %i, packets left -> %i)\n", idx, cb.apps[idx], i, totalPackets);
+
+		if (idx + 1 >= AppLicensesChanged_t::MAX_APPS_PER_CALLBACK)
+		{
+			user->postCallback(ECallbackType::AppLicensesChanged_t, &cb, sizeof(cb));
+			totalPackets--;
+			memset(&cb, 0, sizeof(cb));
+		}
+	}
+
+	if (cb.count)
+	{
+		user->postCallback(ECallbackType::AppLicensesChanged_t, &cb, sizeof(cb));
+	}
+}
+
 void Apps::runIPCFrame()
 {
 	if (!g_config.reloadApps.get())
@@ -208,37 +239,6 @@ void Apps::runIPCFrame()
 	}
 
 	g_config.reloadApps = false;
-}
-
-void Apps::parseProductInfoFromResponse(CMsgClientPICSProductInfoResponse* msg)
-{
-	const auto user = g_pSteamEngine->getUser(0);
-
-	AppLicensesChanged_t cb { };
-
-	unsigned int totalPackets = std::floor(msg->apps_size() / AppLicensesChanged_t::MAX_APPS_PER_CALLBACK);
-
-	for(int i = 0; i < msg->apps_size(); i++)
-	{
-		unsigned int idx = i % AppLicensesChanged_t::MAX_APPS_PER_CALLBACK;
-		cb.apps[idx] = msg->apps(i).appid();
-		cb.count = idx + 1;
-		cb.remainingPackets = totalPackets;
-
-		g_pLog->debug("AppLicensesChanged_t.apps[%u] -> %u (i -> %i, packets left -> %i)\n", idx, cb.apps[idx], i, totalPackets);
-
-		if (idx + 1 >= AppLicensesChanged_t::MAX_APPS_PER_CALLBACK)
-		{
-			user->postCallback(ECallbackType::AppLicensesChanged_t, &cb, sizeof(cb));
-			totalPackets--;
-			memset(&cb, 0, sizeof(cb));
-		}
-	}
-
-	if (cb.count)
-	{
-		user->postCallback(ECallbackType::AppLicensesChanged_t, &cb, sizeof(cb));
-	}
 }
 
 bool Apps::shouldDisableCloud(uint32_t appId)
