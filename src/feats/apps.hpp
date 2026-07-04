@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <unordered_set>
 
 class CAppOwnershipInfo;
 class CProtoBufMsgBase;
@@ -22,6 +23,8 @@ namespace Apps
 	void getAppStateInfo(uint32_t appId, AppStateInfo_t* info);
 	void parseProductInfoFromResponse(CMsgClientPICSProductInfoResponse* msg);
 	void runIPCFrame();
+
+	void postAppLicensesChanged(const std::unordered_set<uint32_t>& apps);
 
 	bool shouldDisableCloud(uint32_t appId);
 	bool shouldDisableCDKey(uint32_t appId);

@@ -9,6 +9,7 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <mutex>
 #include <pthread.h>
 #include <string>
 #include <unordered_map>
@@ -69,7 +70,9 @@ public:
 	MTVariable<unsigned int> logLevel;
 	MTVariable<bool> extendedLogging;
 
-	MTVariable<bool> reloadApps;
+	std::mutex appsChangedMutex;
+	std::unordered_set<uint32_t> newApps;
+	std::unordered_set<uint32_t> removedApps;
 
 	//Using incomplete class to avoid runtime linking errors
 	CFileWatcher* watcher;
@@ -82,7 +85,7 @@ public:
 	bool init();
 
 	void setError(ELoadError err);
-	bool loadSettings();
+	bool loadSettings(bool firstLoad = false);
 
 	template<typename T>
 	T getSetting(YAML::Node& node, const char* name, T defVal)

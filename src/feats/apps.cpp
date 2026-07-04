@@ -14,6 +14,7 @@
 #include "fakeappid.hpp"
 
 #include <cmath>
+#include <mutex>
 
 bool Apps::applistRequested;
 
@@ -170,20 +171,39 @@ void Apps::getAppStateInfo(uint32_t appId, AppStateInfo_t* info)
 
 void Apps::parseProductInfoFromResponse(CMsgClientPICSProductInfoResponse* msg)
 {
+	auto set = std::unordered_set<uint32_t>();
+	for(const auto& app : msg->apps())
+	{
+		set.emplace(app.appid());
+	}
+	postAppLicensesChanged(set);
+}
+
+void Apps::postAppLicensesChanged(const std::unordered_set<uint32_t>& apps)
+{
+	if (!apps.size())
+	{
+		return;
+	}
+
 	const auto user = g_pSteamEngine->getUser(0);
+	if (!user)
+	{
+		return;
+	}
 
 	AppLicensesChanged_t cb { };
+	unsigned int totalPackets = std::floor(apps.size() / AppLicensesChanged_t::MAX_APPS_PER_CALLBACK);
 
-	unsigned int totalPackets = std::floor(msg->apps_size() / AppLicensesChanged_t::MAX_APPS_PER_CALLBACK);
-
-	for(int i = 0; i < msg->apps_size(); i++)
+	for(unsigned int i = 0; i < apps.size(); i++)
 	{
 		unsigned int idx = i % AppLicensesChanged_t::MAX_APPS_PER_CALLBACK;
-		cb.apps[idx] = msg->apps(i).appid();
+		cb.apps[idx] = *std::next(apps.begin(), i);
 		cb.count = idx + 1;
+		cb.appsAdded |= 1llu << idx;
 		cb.remainingPackets = totalPackets;
 
-		g_pLog->debug("AppLicensesChanged_t.apps[%u] -> %u (i -> %i, packets left -> %i)\n", idx, cb.apps[idx], i, totalPackets);
+		g_pLog->debug("AppLicensesChanged_t.apps[%u] -> %u (i -> %i, packets left -> %i, appsAdded %llu)\n", idx, cb.apps[idx], i, totalPackets, cb.appsAdded);
 
 		if (idx + 1 >= AppLicensesChanged_t::MAX_APPS_PER_CALLBACK)
 		{
@@ -201,17 +221,20 @@ void Apps::parseProductInfoFromResponse(CMsgClientPICSProductInfoResponse* msg)
 
 void Apps::runIPCFrame()
 {
-	if (!g_config.reloadApps.get())
-	{
-		return;
-	}
-
 	if (!g_pClientApps)
 	{
 		return;
 	}
 
-	const auto added = g_config.addedAppIds.get();
+	std::lock_guard appsChanged(g_config.appsChangedMutex);
+
+	if (g_config.removedApps.size())
+	{
+		postAppLicensesChanged(g_config.removedApps);
+		g_config.removedApps.clear();
+	}
+
+	const auto added = g_config.newApps;
 
 	//Max batch of 15, otherwise not all apps will get a response which means they won't get added
 	constexpr unsigned int MAX_APPS_PER_REQUEST = 15;
@@ -238,7 +261,7 @@ void Apps::runIPCFrame()
 		g_pClientApps->requestAppInfoUpdate(apps, idx);
 	}
 
-	g_config.reloadApps = false;
+	g_config.newApps.clear();
 }
 
 bool Apps::shouldDisableCloud(uint32_t appId)

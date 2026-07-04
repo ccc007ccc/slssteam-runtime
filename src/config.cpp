@@ -70,7 +70,6 @@ bool CConfig::createFile()
 static void onFileChange()
 {
 	g_config.loadSettings();
-	g_config.reloadApps = true;
 	g_pLog->notify("Config reloaded!");
 }
 
@@ -83,7 +82,7 @@ bool CConfig::init()
 		watcher->start();
 	}
 
-	loadSettings();
+	loadSettings(true);
 	return true;
 }
 
@@ -106,7 +105,7 @@ void CConfig::setError(ELoadError err)
 	__loadErrors = err;
 }
 
-bool CConfig::loadSettings()
+bool CConfig::loadSettings(bool firstLoad)
 {
 	YAML::Node node;
 	try
@@ -157,8 +156,37 @@ bool CConfig::loadSettings()
 	g_pLog->info("ExtendedLogging: %i\n", extendedLogging.get());
 	g_pLog->info("LogLevel: %i\n", logLevel.get());
 
+	std::lock_guard appsChanged(appsChangedMutex);
+	auto prevAppIds = addedAppIds.get();
+	auto _addedAppIds = getList<uint32_t>(node, "AdditionalApps");
+
+	if (!firstLoad)
+	{
+		for(const auto& appId : prevAppIds)
+		{
+			if (_addedAppIds.contains(appId))
+			{
+				continue;
+			}
+
+			removedApps.emplace(appId);
+			g_pLog->debug("AppId %u removed from AdditionalApps\n", appId);
+		}
+		for(const auto& appId : _addedAppIds)
+		{
+			if (prevAppIds.contains(appId))
+			{
+				continue;
+			}
+
+			newApps.emplace(appId);
+			g_pLog->debug("AppId %u added to AdditionalApps\n", appId);
+		}
+	}
+
+	addedAppIds = _addedAppIds;
+
 	appIds = getList<uint32_t>(node, "AppIds");
-	addedAppIds = getList<uint32_t>(node, "AdditionalApps");
 	fakeOffline = getList<uint32_t>(node, "FakeOffline");
 
 	fakeAppIds = getMap<uint32_t, uint32_t>(node, "FakeAppIds");
@@ -281,7 +309,6 @@ bool CConfig::loadSettings()
 		default:
 			break;
 	}
-
 
 	return true;
 }

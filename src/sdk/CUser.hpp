@@ -23,14 +23,14 @@ struct AppLicensesChanged_t
 {
 	static constexpr unsigned int MAX_APPS_PER_CALLBACK = 0x40;
 
-	bool reloadAll;
-	bool firstLoad;
-	uint8_t __pad_0x2[0x2];
-	uint32_t remainingPackets;
-	uint32_t count;
-	uint32_t apps[MAX_APPS_PER_CALLBACK];
-	uint32_t appsAdded;
-};
+	bool reloadAll;							//0x0
+	bool firstLoad;							//0x1
+	uint8_t __pad_0x2[0x2];					//0x2
+	uint32_t remainingPackets;				//0x4
+	uint32_t count;							//0x8
+	uint32_t apps[MAX_APPS_PER_CALLBACK];	//0xC
+	uint64_t appsAdded;						//0x10C
+}; //0x110
 
 class CUser
 {
