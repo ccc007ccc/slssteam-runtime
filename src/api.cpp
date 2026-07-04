@@ -6,13 +6,14 @@
 #include "filewatcher.hpp"
 #include "utils.hpp"
 
-#include <ios>
+#include <cerrno>
 #include <mutex>
 
 
 namespace SLSAPI
 {
 	const char* path = "/tmp/SLSsteam.API";
+
 	std::fstream fstream;
 	CFileWatcher* watcher;
 
@@ -77,12 +78,23 @@ void SLSAPI::onFileChange()
 
 void SLSAPI::init()
 {
-	fstream = std::fstream(path, std::ios::in | std::ios::out);
+	fstream = std::fstream(path, std::fstream::in | std::fstream::out | std::fstream::trunc); //Open for reading, writing and also delete contents
+
+	if (!fstream.is_open())
+	{
+		g_pLog->warn("Failed to create %s (%s)!\n API will be unavailable", path, strerror(errno));
+		return;
+	}
 
 	watcher = new CFileWatcher(onFileChange);
-	watcher->addFile(path);
-	watcher->start();
+	int fd = watcher->addFile(path);
+	if (fd == -1)
+	{
+		g_pLog->warn("Failed to watch %s!\n API will be unavailable", path);
+		return;
+	}
 
+	watcher->start();
 	g_pLog->debug("SLSsteam API initialized!\n");
 }
 
