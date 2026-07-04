@@ -37,7 +37,7 @@ void SLSAPI::onFileChange()
 
 	//Shitty way to reopen the stream. We have to do this, otherwise the fstream gets invalidated when running echo >
 	fstream.close();
-	fstream.open(path);
+	fstream.open(path, std::fstream::in);
 
 	char cmd[128];
 	fstream.getline(cmd, sizeof(cmd));
