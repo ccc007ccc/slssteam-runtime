@@ -1,6 +1,7 @@
 #pragma once
 
 #include <pthread.h>
+#include <string>
 #include <unordered_map>
 
 typedef void(*FileModifyEvent_t)();
@@ -11,14 +12,14 @@ class CFileWatcher
 
 public:
 	int notifyFd;
-	std::unordered_map<int, const char*> fileFdMap;
+	std::unordered_map<int, std::string> fileFdMap;
 
 	FileModifyEvent_t onModify;
 
 	CFileWatcher(FileModifyEvent_t onModify);
 	~CFileWatcher();
 
-	bool addFile(const char* path);
+	int addFile(const char* path);
 	bool start();
 	void stop();
 };

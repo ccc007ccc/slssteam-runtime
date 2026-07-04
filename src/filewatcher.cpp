@@ -23,8 +23,18 @@ void* watchLoop(void* args)
 			continue;
 		}
 
-		g_pLog->debug("inotify %u(%s) -> %u\n", event.wd, watcher->fileFdMap[event.wd], event.mask);
+		const char* fileName = watcher->fileFdMap[event.wd].c_str();
+
+		g_pLog->debug("inotify %u(%s) -> %u\n", event.wd, fileName, event.mask);
 		watcher->onModify();
+
+		//Remove & readd the file because some file editors move the file instead of writing to it
+		//doing so will need us to readd it, otherwise no events will fire anymore
+		close(event.wd);
+		watcher->fileFdMap.erase(event.wd);
+		watcher->addFile(fileName);
+
+		g_pLog->debug("Readded FileWatcher for %s!\n", fileName);
 	}
 
 	return nullptr;
@@ -61,17 +71,17 @@ CFileWatcher::~CFileWatcher()
 	}
 }
 
-bool CFileWatcher::addFile(const char* path)
+int CFileWatcher::addFile(const char* path)
 {
 	int fd = inotify_add_watch(notifyFd, path, IN_MODIFY);
 	if (fd == -1)
 	{
-		return false;
+		return fd;
 	}
 
-	fileFdMap[fd] = path;
+	fileFdMap[fd] = std::string(path);
 	g_pLog->debug("Added %s to FileWatcher %i\n", path, notifyFd);
-	return fd != -1;
+	return fd;
 }
 
 bool CFileWatcher::start()
