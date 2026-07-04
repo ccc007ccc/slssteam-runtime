@@ -2,39 +2,62 @@
 
 #include "log.hpp"
 
+#include <cstring>
+#include <filesystem>
+#include <linux/limits.h>
 #include <sys/inotify.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 
 //TODO: Investigate why gcc complains when put into CFileWatcher itself
 void* watchLoop(void* args)
 {
+	constexpr unsigned int BUF_LEN = (10 * (sizeof(struct inotify_event) + NAME_MAX + 1));
+	char buf[BUF_LEN] __attribute__ ((aligned(8)));
+	char* p;
+	inotify_event* event;
+	ssize_t size;
+
 	auto watcher = reinterpret_cast<CFileWatcher*>(args);
 	g_pLog->debug("Started FileWatcher %u\n", watcher->notifyFd);
 
 	for(;;)
 	{
-		g_pLog->debug("Watching for changes...\n");
-
-		inotify_event event {};
-		size_t size = read(watcher->notifyFd, &event, sizeof(inotify_event));
+		size = read(watcher->notifyFd, buf, sizeof(buf));
 		if (!size)
 		{
-			continue;
+			g_pLog->debug("Failed to read from FileWatcher %i! (size = 0)\n", watcher->notifyFd);
+			break;
 		}
 
-		const char* fileName = watcher->fileFdMap[event.wd].c_str();
+		if (size == -1)
+		{
+			g_pLog->debug("Failed to read from FileWatcher %i (%s)!\n", watcher->notifyFd, strerror(errno));
+			break;
+		}
 
-		g_pLog->debug("inotify %u(%s) -> %u\n", event.wd, fileName, event.mask);
-		watcher->onModify();
+		for (p = buf; p < buf + size; )
+		{
+			event = reinterpret_cast<inotify_event*>(p);
+			p += sizeof(inotify_event) + event->len;
 
-		//Remove & readd the file because some file editors move the file instead of writing to it
-		//doing so will need us to readd it, otherwise no events will fire anymore
-		close(event.wd);
-		watcher->fileFdMap.erase(event.wd);
-		watcher->addFile(fileName);
+			auto path = watcher->fileFdMap[event->wd];
+			
+			if (!(event->mask & IN_CLOSE_WRITE))
+			{
+				continue;
+			}
 
-		g_pLog->debug("Readded FileWatcher for %s!\n", fileName);
+			if (strcmp(event->name, path.filename().c_str()) != 0)
+			{
+				continue;
+			}
+
+			g_pLog->debug("inotify %s(%u) -> %u : %s\n", path.filename().c_str(), event->wd, event->mask, event->len ? event->name : "none");
+
+			watcher->onModify();
+		}
 	}
 
 	return nullptr;
@@ -73,14 +96,17 @@ CFileWatcher::~CFileWatcher()
 
 int CFileWatcher::addFile(const char* path)
 {
-	int fd = inotify_add_watch(notifyFd, path, IN_MODIFY);
+	//Watching seperate files does not seem to work very well, since the file descriptor becomes useless
+	//on some operations
+	std::filesystem::path p(path);
+	int fd = inotify_add_watch(notifyFd, p.parent_path().c_str(), IN_CLOSE_WRITE);
 	if (fd == -1)
 	{
 		return fd;
 	}
 
-	fileFdMap[fd] = std::string(path);
-	g_pLog->debug("Added %s to FileWatcher %i\n", path, notifyFd);
+	fileFdMap[fd] = p;
+	g_pLog->debug("Added %s with file %s to FileWatcher %i\n", p.parent_path().c_str(), p.filename().c_str(), notifyFd);
 	return fd;
 }
 

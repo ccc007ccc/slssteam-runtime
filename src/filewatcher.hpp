@@ -1,7 +1,8 @@
 #pragma once
 
+#include <filesystem>
 #include <pthread.h>
-#include <string>
+#include <sys/inotify.h>
 #include <unordered_map>
 
 typedef void(*FileModifyEvent_t)();
@@ -12,7 +13,7 @@ class CFileWatcher
 
 public:
 	int notifyFd;
-	std::unordered_map<int, std::string> fileFdMap;
+	std::unordered_map<int, std::filesystem::path> fileFdMap;
 
 	FileModifyEvent_t onModify;
 
