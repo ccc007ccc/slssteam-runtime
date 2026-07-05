@@ -407,6 +407,7 @@ namespace SchemaGrabber
             if (args.Length < 3 || (args.Length > 0 && args.Any(a => a == "-h" || a == "--help")))
             {
                 Console.WriteLine("Usage: ./schema-grabber username password appId");
+                Console.WriteLine("Use AppId 0 to generate schemas for all installed games");
                 Environment.Exit(1);
             }
 
