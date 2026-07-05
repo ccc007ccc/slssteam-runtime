@@ -298,8 +298,11 @@ namespace SchemaGrabber
             }
             else
             {
-                foreach (var appId in GetInstalledGames())
+                var games = GetInstalledGames();
+                for (var i = 0; i < games.Count; i++)
                 {
+                    Console.Title = $"schema-grabber {i + 1}/{games.Count}";
+                    var appId = games[i];
                     await GetSchema(appId);
                 }
             }
@@ -345,7 +348,7 @@ namespace SchemaGrabber
                     var resp = await GetUserStats(steamId, appId);
                     var body = resp.body;
 
-                    Console.WriteLine($"GetUserStatsResponse {resp.body.eresult}");
+                    Console.WriteLine($"GetUserStatsResponse {body.eresult} for {steamId}");
                     if ((EResult)body.eresult != EResult.OK)
                     {
                         continue;
@@ -409,6 +412,8 @@ namespace SchemaGrabber
     {
         public static void Main(string[] args)
         {
+            Console.Title = "schema-grabber";
+
             if (args.Length < 3 || (args.Length > 0 && args.Any(a => a == "-h" || a == "--help")))
             {
                 Console.WriteLine("Usage: ./schema-grabber username password appId");
