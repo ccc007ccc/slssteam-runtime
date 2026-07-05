@@ -128,7 +128,7 @@ namespace SchemaGrabber
 
                 var accountId = ulong.Parse(steamIdStr) & 0xFFFFFFFF;
                 users.Add(accountId);
-                Console.WriteLine($"Found user {accountId}");
+                //Console.WriteLine($"Found user {accountId}");
             }
 
             return users;
@@ -359,7 +359,10 @@ namespace SchemaGrabber
 
                     var statsDir = GetStatsDir();
                     var accountId = User.SteamID & 0xffffffff;
-                    File.WriteAllBytes($"{statsDir}/UserGameStatsSchema_{body.game_id}.bin", resp.body.schema);
+                    var schemaFile = $"{statsDir}/UserGameStatsSchema_{body.game_id}.bin";
+
+                    File.WriteAllBytes(schemaFile, resp.body.schema);
+                    Console.WriteLine($"Created {schemaFile}");
 
                     var users = GetUsers();
                     if (!users.Contains(accountId))
@@ -378,6 +381,8 @@ namespace SchemaGrabber
                                 0x02, 0x50, 0x65, 0x6e, 0x64, 0x69, 0x6e, 0x67, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x73, 0x00,
                                 0x00, 0x00, 0x00, 0x00, 0x08, 0x08
                             });
+
+                            Console.WriteLine($"Created {userStatsPath}");
                         }
                     }
 
