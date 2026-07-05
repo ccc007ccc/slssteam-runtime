@@ -30,7 +30,7 @@ ifeq ($(shell type mold &> /dev/null && echo "found"),found)
 	LDFLAGS += -fuse-ld=mold
 endif
 
-audit-libs: bin/SLSsteam.so bin/library-inject.so tools/ticket-grabber/bin/Release/net9.0/linux-x64/publish/ticket-grabber
+audit-libs: bin/SLSsteam.so bin/library-inject.so tools/ticket-grabber/bin/Release/net9.0/linux-x64/publish/ticket-grabber tools/schema-grabber/bin/Release/net9.0/linux-x64/publish/schema-grabber
 
 bin/SLSsteam.so: $(objs) $(libs)
 	@mkdir -p bin
@@ -43,6 +43,9 @@ bin/library-inject.so: tools/library-inject/main.cpp tools/library-inject/build.
 
 tools/ticket-grabber/bin/Release/net9.0/linux-x64/publish/ticket-grabber:
 	sh tools/ticket-grabber/build.sh
+
+tools/schema-grabber/bin/Release/net9.0/linux-x64/publish/schema-grabber:
+	sh tools/schema-grabber/build.sh
 
 -include $(deps)
 obj/update.o: src/update.cpp res/version.txt
@@ -62,7 +65,7 @@ obj/%.o : src/%.cpp
 	$(CXX) $(CXXFLAGS) -isysteminclude -MMD -MP -c $< -o $@
 
 clean:
-	rm -rvf "obj/" "bin/" "zips/" "tools/ticket-grabber/bin"
+	rm -rvf "obj/" "bin/" "zips/" "tools/ticket-grabber/bin" "tools/schema-grabber/bin"
 
 install:
 	sh setup.sh
@@ -76,8 +79,8 @@ zips: rebuild
 		"setup.sh" \
 		"docs/LICENSE" \
 		"res/config.yaml" \
-		"tools/SLScheevo" \
-		"tools/ticket-grabber/bin/Release/net9.0/linux-x64/publish/ticket-grabber"
+		"tools/ticket-grabber/bin/Release/net9.0/linux-x64/publish/ticket-grabber" \
+		"tools/schema-grabber/bin/Release/net9.0/linux-x64/publish/schema-grabber"
 
 	#Compatibility for Github issues
 	7z a -mx9 -m9=lzma \
@@ -87,8 +90,8 @@ zips: rebuild
 		"setup.sh" \
 		"docs/LICENSE" \
 		"res/config.yaml" \
-		"tools/SLScheevo" \
-		"tools/ticket-grabber/bin/Release/net9.0/linux-x64/publish/ticket-grabber"
+		"tools/ticket-grabber/bin/Release/net9.0/linux-x64/publish/ticket-grabber" \
+		"tools/schema-grabber/bin/Release/net9.0/linux-x64/publish/schema-grabber"
 
 zips-config:
 	7z a -mx9 -m9=lzma "zips/SLSsteam - SLSConfig $(DATE).zip" "$(HOME)/.config/SLSsteam/config.yaml"
