@@ -7,12 +7,12 @@ let
   shortRev = builtins.substring 0 7 rev;
 in
 buildDotnetModule {
-  pname = "ticket-grabber";
+  pname = "schema-grabber";
   version = "0.1.0+${shortRev}";
 
-  src = ../tools/ticket-grabber;
+  src = ../tools/schema-grabber;
 
-  projectFile = "ticket-grabber.csproj";
+  projectFile = "schema-grabber.csproj";
   dotnet-sdk = dotnetCorePackages.sdk_9_0;
   dotnet-runtime = dotnetCorePackages.runtime_9_0;
   nugetDeps = ./deps.json;
