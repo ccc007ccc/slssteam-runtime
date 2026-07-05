@@ -17,7 +17,7 @@ Check out the [Installation](https://github.com/AceSLS/SLSsteam/wiki/Installatio
 ## Hall of Fame aka Credits
 
 Contributors:
-- [Parasitic-Hollow](https://github.com/Parasitic-Hollow/): Fixing gamepad issues caused by FakeAppIds
+- [Parasitic-Hollow](https://github.com/Parasitic-Hollow/): Fixing gamepad issues caused by FakeAppIds & maintaining SLSsteam in my absence
 - [amione](https://github.com/xamionex/): Creating the SLSsteam banner & logo the instant he found out I was looking around for one <3
 - [DeveloperMikey](https://github.com/DeveloperMikey): Added Nix support 
 - [skrimix](https://github.com/skrimix): Added flatpak support
@@ -48,8 +48,6 @@ Please do not treat the issue tracker like a private support hotline!
 Feel free to join our [Discord](https://discord.gg/j3ZzjeV4eQ) instead.
 
 ## Related Projects
-
-[SLScheevo](https://github.com/xamionex/SLScheevo): Used to get Achievement Schemas
 
 [h3adcr-b](https://github.com/Deadboy666/h3adcr-b): Universal SLSsteam installer & steamclient downgrader
 
