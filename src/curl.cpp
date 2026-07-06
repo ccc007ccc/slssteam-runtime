@@ -17,6 +17,7 @@ int Curl::getString(const char* url, std::string& out)
 {
 	curl = curl_easy_init();
 	curl_easy_setopt(curl, CURLOPT_URL, url);
+	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, CURLFOLLOW_FIRSTONLY);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &out);
 
