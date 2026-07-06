@@ -72,16 +72,6 @@ namespace Patterns
 		SigFollowMode::Relative
 	};
 
-	namespace CAPIJob
-	{
-		Pattern_t GetPlayerStats
-		{
-			"CAPIJob::GetPlayerStats",
-			"E8 ? ? ? ? 83 C4 10 89 C5 E9 ? ? ? ? ? ? 80 BE ? ? ? ? 00",
-			SigFollowMode::Relative
-		};
-	}
-
 	namespace CAppDataCache
 	{
 		Pattern_t BParseResponseMessage
@@ -145,6 +135,16 @@ namespace Patterns
 			"C7 04 24 50 03 00 00 E8 ? ? ? ? 5A 89 45 ? 59 FF B6 ? ? ? ? FF B6 ? ? ? ? FF B6 ? ? ? ? FF B6 ? ? ? ? FF B6 ? ? ? ? 6A 01",
 			SigFollowMode::PrologueUpwards,
 			std::vector<uint8_t> { 0xe8, 0x57, 0xe5, 0x89, 0x55 }
+		};
+	}
+
+	namespace CClientUnifiedServiceTransport
+	{
+		Pattern_t SendAndRecvMsg
+		{
+			"CClientUnifiedServiceTransport::SendAndRecvMsg",
+			"E8 ? ? ? ? 83 C4 ? 84 C0 0F 84 ? ? ? ? 0F B6 45 B2",
+			SigFollowMode::Relative
 		};
 	}
 

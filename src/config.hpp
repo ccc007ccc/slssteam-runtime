@@ -59,6 +59,7 @@ public:
 	MTVariable<bool> useWhiteList;
 	MTVariable<bool> automaticFilter;
 	MTVariable<bool> playNotOwnedGames;
+	MTVariable<bool> grabSchemas;
 	MTVariable<bool> safeMode;
 	MTVariable<bool> notifications;
 	MTVariable<bool> warnHashMissmatch;

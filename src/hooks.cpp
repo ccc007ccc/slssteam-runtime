@@ -167,23 +167,6 @@ static void hkTraceIPC(const char* iface, const char* fn)
 	}
 }
 
-static uint32_t hkCAPIJob_GetPlayerStats(void* pAPIJob)
-{
-	uint32_t res = Hooks::CAPIJob_GetPlayerStats.tramp.fn(pAPIJob);
-
-	g_pLog->debug
-	(
-		"%s(%p) -> %i\n",
-		Hooks::CAPIJob_GetPlayerStats.name.c_str(),
-		pAPIJob,
-		res
-	);
-
-	Achievements::getPlayerStats(res);
-
-	return res;
-}
-
 static uint32_t hkAppDataCache_BParseResponseFromMessage(void* pAppDataCache, CProtoBufMsgBase* pMsg)
 {
 	const uint32_t ret = Hooks::CAppDataCache_BParseResponseFromMessage.tramp.fn(pAppDataCache, pMsg);
@@ -220,6 +203,7 @@ static void hkProtoBufMsgBase_InitFromPacket(CProtoBufMsgBase* pMsg, void* pSrc)
 
 static uint32_t hkProtoBufMsgBase_Send(CProtoBufMsgBase* pMsg)
 {
+	Achievements::sendMessage(pMsg);
 	Apps::sendMsg(pMsg);
 	FakeAppIds::sendMsg(pMsg);
 
@@ -302,6 +286,43 @@ static uint32_t hkSteamMatchmakingServers_RequestInternetServerList(void* pSteam
 	FakeAppIds::fakeAppIdMapServer[handle] = appId;
 
 	return handle;
+}
+
+static uint32_t hkClientUnifiedServiceTransport_SendAndRecvMsg(void* pUnifiedServiceTransport, const char* name, void* send, void* recv, void* arg4)
+{
+	bool clearStats = false;
+	if (strcmp(name, "Player.GetUserStats#1") == 0)
+	{
+		clearStats = Achievements::sendGetPlayerStats(reinterpret_cast<CPlayer_GetUserStats_Request*>(send));
+	}
+
+	const uint32_t ret = Hooks::CClientUnifiedServiceMethod_SendAndRecvMsg.tramp.fn(pUnifiedServiceTransport, name, send, recv, arg4);
+	g_pLog->debug
+	(
+		"%s(%p, %s, %s, %s, %p) -> %u\n",
+
+		Hooks::CClientUnifiedServiceMethod_SendAndRecvMsg.name.c_str(),
+		pUnifiedServiceTransport,
+		name,
+		MemHlp::getTypeName(send),
+		MemHlp::getTypeName(recv),
+		arg4,
+		ret
+	);
+
+	if (strcmp(name, "Player.GetUserStats#1") == 0)
+	{
+		if (clearStats)
+		{
+			Achievements::recvGetPlayerStatsResponse(reinterpret_cast<CPlayer_GetUserStats_Response*>(recv));
+		}
+		else if(!g_config.grabSchemas.get() && ret != ERESULT_OK)
+		{
+			return ERESULT_NO_CONNECTION;
+		}
+	}
+
+	return ret;
 }
 
 __attribute__((hot))
@@ -965,8 +986,6 @@ namespace Hooks
 	DetourHook<IClientUser_RunIPCFrame_t> IClientUser_RunIPCFrame;
 	DetourHook<IClientUserStats_RunIPCFrame_t> IClientUserStats_RunIPCFrame;
 
-	DetourHook<CAPIJob_GetPlayerStats_t> CAPIJob_GetPlayerStats;
-
 	DetourHook<CAppDataCache_BParseResponseFromMessage_t> CAppDataCache_BParseResponseFromMessage;
 
 	DetourHook<CProtoBufMsgBase_InitFromPacket_t> CProtoBufMsgBase_InitFromPacket;
@@ -977,6 +996,8 @@ namespace Hooks
 
 	DetourHook<CSteamEngine_Init_t> CSteamEngine_Init;
 	DetourHook<CSteamEngine_SetAppIdForCurrentPipe_t> CSteamEngine_SetAppIdForCurrentPipe;
+
+	DetourHook<CClientUnifiedServiceMethod_SendAndRecvMsg_t> CClientUnifiedServiceMethod_SendAndRecvMsg;
 
 	DetourHook<CUser_CheckAppOwnership_t> CUser_CheckAppOwnership;
 	DetourHook<CUser_GetSubscribedApps_t> CUser_GetSubscribedApps;
@@ -1020,8 +1041,6 @@ bool Hooks::setup()
 	bool succeeded =
 		TraceIPC.setup(Patterns::TraceIPC, &hkTraceIPC)
 
-		&& CAPIJob_GetPlayerStats.setup(Patterns::CAPIJob::GetPlayerStats, &hkCAPIJob_GetPlayerStats)
-
 		&& CAppDataCache_BParseResponseFromMessage.setup(Patterns::CAppDataCache::BParseResponseMessage, &hkAppDataCache_BParseResponseFromMessage)
 
 		&& CProtoBufMsgBase_InitFromPacket.setup(Patterns::CProtoBufMsgBase::InitFromPacket, &hkProtoBufMsgBase_InitFromPacket)
@@ -1029,6 +1048,8 @@ bool Hooks::setup()
 
 		&& CSteamMatchmakingServers_GetServerDetails.setup(Patterns::CSteamMatchmakingServers::GetServerDetails, &hkSteamMatchmakingServers_GetServerDetails)
 		&& CSteamMatchmakingServers_RequestInternetServerList.setup(Patterns::CSteamMatchmakingServers::RequestInternetServerList, &hkSteamMatchmakingServers_RequestInternetServerList)
+
+		&& CClientUnifiedServiceMethod_SendAndRecvMsg.setup(Patterns::CClientUnifiedServiceTransport::SendAndRecvMsg, &hkClientUnifiedServiceTransport_SendAndRecvMsg)
 
 		&& CUser_CheckAppOwnership.setup(Patterns::CUser::CheckAppOwnership, &hkUser_CheckAppOwnership)
 		&& CUser_GetSubscribedApps.setup(Patterns::CUser::GetSubscribedApps, &hkUser_GetSubscribedApps)
@@ -1071,8 +1092,6 @@ void Hooks::place()
 	//Detours
 	TraceIPC.place();
 
-	CAPIJob_GetPlayerStats.place();
-
 	CAppDataCache_BParseResponseFromMessage.place();
 
 	CProtoBufMsgBase_InitFromPacket.place();
@@ -1083,6 +1102,8 @@ void Hooks::place()
 
 	CSteamMatchmakingServers_GetServerDetails.place();
 	CSteamMatchmakingServers_RequestInternetServerList.place();
+
+	CClientUnifiedServiceMethod_SendAndRecvMsg.place();
 
 	CUser_CheckAppOwnership.place();
 	CUser_GetSubscribedApps.place();
@@ -1114,8 +1135,6 @@ void Hooks::remove()
 	//Detours
 	TraceIPC.remove();
 
-	CAPIJob_GetPlayerStats.remove();
-
 	CAppDataCache_BParseResponseFromMessage.place();
 
 	CProtoBufMsgBase_InitFromPacket.remove();
@@ -1126,6 +1145,8 @@ void Hooks::remove()
 
 	CSteamMatchmakingServers_GetServerDetails.remove();
 	CSteamMatchmakingServers_RequestInternetServerList.remove();
+
+	CClientUnifiedServiceMethod_SendAndRecvMsg.remove();
 
 	CUser_CheckAppOwnership.remove();
 	CUser_GetSubscribedApps.remove();

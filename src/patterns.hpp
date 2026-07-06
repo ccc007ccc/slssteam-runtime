@@ -33,11 +33,6 @@ namespace Patterns
 
 	extern Pattern_t TraceIPC;
 
-	namespace CAPIJob
-	{
-		extern Pattern_t GetPlayerStats;
-	}
-
 	namespace CAppDataCache
 	{
 		extern Pattern_t BParseResponseMessage;
@@ -61,6 +56,11 @@ namespace Patterns
 	{
 		extern Pattern_t GetServerDetails;
 		extern Pattern_t RequestInternetServerList;
+	}
+
+	namespace CClientUnifiedServiceTransport
+	{
+		extern Pattern_t SendAndRecvMsg;
 	}
 
 	namespace CUser

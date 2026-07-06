@@ -1,11 +1,26 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
+
+class CMsgClientGetUserStats;
+class CMsgClientGetUserStatsResponse;
 
 class CProtoBufMsgBase;
 
+class CPlayer_GetUserStats_Request;
+class CPlayer_GetUserStats_Response;
+
 namespace Achievements
 {
-	void getPlayerStats(uint32_t& eresult);
-	void recvMessage(const CProtoBufMsgBase* msg);
+	std::string getReviewUrl(uint32_t appId);
+	uint64_t getPublicProfileForGame(uint32_t appId);
+
+	void recvGetPlayerStatsResponse(CPlayer_GetUserStats_Response* msg);
+	void recvGetUserStatsResponse(CMsgClientGetUserStatsResponse* msg);
+	void recvMessage(CProtoBufMsgBase* msg);
+
+	bool sendGetPlayerStats(CPlayer_GetUserStats_Request* msg);
+	void sendGetUserStats(CMsgClientGetUserStats* msg);
+	void sendMessage(CProtoBufMsgBase* msg);
 }

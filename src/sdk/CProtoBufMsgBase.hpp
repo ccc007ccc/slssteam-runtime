@@ -7,6 +7,7 @@
 #include "protobufs/steammessages_clientserver_appinfo.pb.h"
 #include "protobufs/steammessages_clientserver_friends.pb.h"
 #include "protobufs/steammessages_clientserver_userstats.pb.h"
+#include "protobufs/steammessages_player.steamclient.pb.h"
 
 #include <cstdint>
 
@@ -14,6 +15,7 @@ enum EMsgType : uint16_t
 {
 	EMSG_GAMESPLAYED_NO_DATABLOB = 715,
 	EMSG_GAMESPLAYED = 742,
+	EMSG_REQUEST_USERSTATS= 818,
 	EMSG_REQUEST_USERSTATS_RESPONSE = 819,
 	EMSG_APPOWNERSHIPTICKET_RESPONSE = 858,
 	EMSG_ENCRYPTED_APPTICKET_RESPONSE = 5527,
