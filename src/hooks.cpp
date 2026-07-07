@@ -171,10 +171,9 @@ static void hkTraceIPC(const char* iface, const char* fn)
 
 static uint32_t hkAPIJob_SendAndRecv(CAPIJob* pAPIJob, CProtoBufMsgBase* send, uint32_t a2, uint32_t timeOut, CProtoBufMsgBase* recv, uint32_t targetType)
 {
-	uint32_t ret = 0;
-	bool grabbedSchema = Achievements::sendAndRecvGetUserStats(pAPIJob, send, timeOut, recv, targetType);
+	uint32_t ret = Achievements::sendAndRecvGetUserStats(pAPIJob, send, timeOut, recv, targetType);
 
-	if (!grabbedSchema)
+	if (!ret)
 	{
 		ret = Hooks::CAPIJob_SendAndRecv.tramp.fn(pAPIJob, send, a2, timeOut, recv, targetType);
 	}

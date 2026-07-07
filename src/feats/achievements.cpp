@@ -99,13 +99,13 @@ uint32_t Achievements::sendAndRecvGetPlayerStats(CClientUnifiedServiceTransport*
 	return ERESULT_NO_CONNECTION;
 }
 
-bool Achievements::sendAndRecvGetUserStats(CAPIJob* job, CProtoBufMsgBase* send, uint32_t timeOut, CProtoBufMsgBase* recv, uint32_t targetType)
+uint32_t Achievements::sendAndRecvGetUserStats(CAPIJob* job, CProtoBufMsgBase* send, uint32_t timeOut, CProtoBufMsgBase* recv, uint32_t targetType)
 {
 	auto sendBdy = send->getBody<CMsgClientGetUserStats>();
 
 	if (g_pSteamEngine->getUser(0)->isSubscribed(sendBdy->game_id()))
 	{
-		return false;
+		return 0;
 	}
 
 	auto recvBdy = recv->getBody<CMsgClientGetUserStatsResponse>();
@@ -118,7 +118,8 @@ bool Achievements::sendAndRecvGetUserStats(CAPIJob* job, CProtoBufMsgBase* send,
 		sendBdy->set_steam_id_for_user(id);
 		g_pLog->debug("CMsgClientGetUserStats->set_steam_id_for_user(%llu)\n", id);
 
-		if (!job->sendAndRecv(send, timeOut, recv, targetType))
+		const uint32_t ret = job->sendAndRecv(send, timeOut, recv, targetType);
+		if (!ret)
 		{
 			continue;
 		}
@@ -132,10 +133,10 @@ bool Achievements::sendAndRecvGetUserStats(CAPIJob* job, CProtoBufMsgBase* send,
 		recvBdy->clear_crc_stats();
 		recvBdy->clear_stats();
 
-		return true;
+		return ret;
 	}
 
 	g_pLog->debug("No schemas for %u found! Falling back to offline cache\n", sendBdy->game_id());
 	recvBdy->set_eresult(ERESULT_NO_CONNECTION);
-	return true;
+	return 1;
 }

@@ -20,5 +20,5 @@ namespace Achievements
 	//CPlayer_GetUserStats
 	uint32_t sendAndRecvGetPlayerStats(CClientUnifiedServiceTransport* serviceTransport, CPlayer_GetUserStats_Request* send, CPlayer_GetUserStats_Response* recv);
 	//GetUserStats
-	bool sendAndRecvGetUserStats(CAPIJob* job, CProtoBufMsgBase* send, uint32_t timeOut, CProtoBufMsgBase* recv, uint32_t targetType);
+	uint32_t sendAndRecvGetUserStats(CAPIJob* job, CProtoBufMsgBase* send, uint32_t timeOut, CProtoBufMsgBase* recv, uint32_t targetType);
 }
