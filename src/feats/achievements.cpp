@@ -17,7 +17,9 @@
 std::string Achievements::getReviewUrl(uint32_t appId)
 {
 	std::stringstream url;
-	url << "https://store.steampowered.com/appreviews/" << appId << "?json=1&filter=recent&language=all&purchase_type=all&num_per_page=100";
+	url << "https://store.steampowered.com/appreviews/" << appId
+		<< "?json=1&filter=recent&language=all&purchase_type=all&num_per_page="
+		<< g_config.maxSchemaTries.get();
 
 	return url.str();
 }
@@ -87,7 +89,8 @@ void Achievements::recvGetPlayerStatsResponse(CPlayer_GetUserStats_Response* msg
 
 void Achievements::recvGetUserStatsResponse(CMsgClientGetUserStatsResponse *msg)
 {
-	if (!g_config.grabSchemas.get() && msg->eresult() != ERESULT_OK)
+	//Use offline cache when request fails for any reason
+	if (msg->eresult() != ERESULT_OK)
 	{
 		msg->set_eresult(ERESULT_NO_CONNECTION);
 		return;
@@ -115,7 +118,7 @@ void Achievements::recvMessage(CProtoBufMsgBase* msg)
 
 bool Achievements::sendGetPlayerStats(CPlayer_GetUserStats_Request* msg)
 {
-	if (!g_config.grabSchemas.get())
+	if (!g_config.maxSchemaTries.get())
 	{
 		return false;
 	}
@@ -140,7 +143,7 @@ bool Achievements::sendGetPlayerStats(CPlayer_GetUserStats_Request* msg)
 
 void Achievements::sendGetUserStats(CMsgClientGetUserStats* msg)
 {
-	if (!g_config.grabSchemas.get())
+	if (!g_config.maxSchemaTries.get())
 	{
 		return;
 	}

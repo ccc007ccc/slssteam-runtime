@@ -291,7 +291,8 @@ static uint32_t hkSteamMatchmakingServers_RequestInternetServerList(void* pSteam
 static uint32_t hkClientUnifiedServiceTransport_SendAndRecvMsg(void* pUnifiedServiceTransport, const char* name, void* send, void* recv, void* arg4)
 {
 	bool clearStats = false;
-	if (strcmp(name, "Player.GetUserStats#1") == 0)
+	const bool isGetPlayerStats = strcmp(name, "Player.GetUserStats#1") == 0;
+	if (isGetPlayerStats)
 	{
 		clearStats = Achievements::sendGetPlayerStats(reinterpret_cast<CPlayer_GetUserStats_Request*>(send));
 	}
@@ -310,13 +311,14 @@ static uint32_t hkClientUnifiedServiceTransport_SendAndRecvMsg(void* pUnifiedSer
 		ret
 	);
 
-	if (strcmp(name, "Player.GetUserStats#1") == 0)
+	if (isGetPlayerStats)
 	{
 		if (clearStats)
 		{
 			Achievements::recvGetPlayerStatsResponse(reinterpret_cast<CPlayer_GetUserStats_Response*>(recv));
 		}
-		else if(!g_config.grabSchemas.get() && ret != ERESULT_OK)
+		//Use offline cache when request fails for any reason
+		else if(ret != ERESULT_OK)
 		{
 			return ERESULT_NO_CONNECTION;
 		}

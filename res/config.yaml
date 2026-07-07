@@ -69,10 +69,12 @@ SubscriptionTimestamps:
 #Blocks games from unlocking on wrong accounts
 DenuvoGames:
 
-#Automatically grab schemas from Steams CDN which makes them always up to date
+#Automatically grab Achievement schemas from Steams CDN which makes them always up to date
 #Slows down game's loading page the first time you click them
-#If you don't want this use tools/schema-grabber instead to grab them outside of steam
-GrabSchemas: yes
+#If you don't want this set it to 0 and use tools/schema-grabber instead to grab them outside of steam
+#to get the achievement schemas. Doing so will revert to the previous behaviour of falling back to
+#the offline cache (appcache/stats) when a GetUserStat request fails
+MaxSchemaTries: 10
 
 #Automatically disable SLSsteam when steamclient.so does not match a predefined file hash that is known to work
 #You should enable this if you're planing to use SLSsteam with Steam Deck's gamemode

@@ -59,7 +59,7 @@ public:
 	MTVariable<bool> useWhiteList;
 	MTVariable<bool> automaticFilter;
 	MTVariable<bool> playNotOwnedGames;
-	MTVariable<bool> grabSchemas;
+	MTVariable<uint32_t> maxSchemaTries;
 	MTVariable<bool> safeMode;
 	MTVariable<bool> notifications;
 	MTVariable<bool> warnHashMissmatch;
