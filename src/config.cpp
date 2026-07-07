@@ -127,8 +127,6 @@ bool CConfig::loadSettings(bool firstLoad)
 	
 	disableFamilyLock = getSetting<bool>(node, "DisableFamilyShareLock", true);
 	useWhiteList = getSetting<bool>(node, "UseWhitelist", false);
-	automaticFilter = getSetting<bool>(node, "AutoFilterList", true);
-	playNotOwnedGames = getSetting<bool>(node, "PlayNotOwnedGames", false);
 	maxSchemaTries = getSetting<uint32_t>(node, "MaxSchemaTries", 10);
 	safeMode = getSetting<bool>(node, "SafeMode", false);
 	notifications = getSetting<bool>(node, "Notifications", true);
@@ -144,8 +142,6 @@ bool CConfig::loadSettings(bool firstLoad)
 	//TODO: Create smart logging function to log them automatically via getSetting
 	g_pLog->info("DisableFamilyShareLock: %i\n", disableFamilyLock.get());
 	g_pLog->info("UseWhitelist: %i\n", useWhiteList.get());
-	g_pLog->info("AutoFilterList: %i\n", automaticFilter.get());
-	g_pLog->info("PlayNotOwnedGames: %i\n", playNotOwnedGames.get());
 	g_pLog->info("MaxSchemaTries: %i\n", maxSchemaTries.get());
 	g_pLog->info("SafeMode: %i\n", safeMode.get());
 	g_pLog->info("Notifications: %i\n", notifications.get());

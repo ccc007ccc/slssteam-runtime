@@ -57,8 +57,6 @@ public:
 
 	MTVariable<bool> disableFamilyLock;
 	MTVariable<bool> useWhiteList;
-	MTVariable<bool> automaticFilter;
-	MTVariable<bool> playNotOwnedGames;
 	MTVariable<uint32_t> maxSchemaTries;
 	MTVariable<bool> safeMode;
 	MTVariable<bool> notifications;

@@ -27,15 +27,8 @@ DisableFamilyShareLock: yes
 #Switches to whitelist instead of the default blacklist
 UseWhitelist: no
 
-#Automatically filter Apps in CheckAppOwnership. Filters everything but Games and Applications. Should not affect DLC checks
-#Overrides black-/whitelist. Gets overriden by AdditionalApps
-AutoFilterList: yes
-
 #List of AppIds to ex-/include
 AppIds:
-
-#Enables playing of not owned games. Respects black-/whitelist AppIds
-PlayNotOwnedGames: no
 
 #Additional AppIds to inject (Overrides your black-/whitelist & also overrides OwnerIds for apps you got shared!) Best to use this only on games NOT in your library.
 AdditionalApps:
