@@ -72,6 +72,16 @@ namespace Patterns
 		SigFollowMode::Relative
 	};
 
+	namespace CAPIJob
+	{
+		Pattern_t SendAndRecv
+		{
+			"CAPIJob::SendAndRecv",
+			"E8 ? ? ? ? 88 85 18 FF FF FF",
+			SigFollowMode::Relative
+		};
+	}
+
 	namespace CAppDataCache
 	{
 		Pattern_t BParseResponseMessage

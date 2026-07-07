@@ -6,7 +6,9 @@
 #include <memory>
 #include <string>
 
+class CAPIJob;
 class CAppOwnershipInfo;
+class CClientUnifiedServiceTransport;
 class CProtoBufMsgBase;
 
 struct gameserverdetails_t;
@@ -81,6 +83,8 @@ namespace Hooks
 	typedef void(*IClientUser_RunIPCFrame_t)(void*, void*, void*, void*);
 	typedef void(*IClientUserStats_RunIPCFrame_t)(void*, void*, void*, void*);
 
+	typedef uint32_t(*CAPIJob_SendAndRecv_t)(CAPIJob*, CProtoBufMsgBase*, uint32_t, uint32_t, CProtoBufMsgBase*, uint32_t);
+
 	typedef uint32_t(*CAppDataCache_BParseResponseFromMessage_t)(void*, CProtoBufMsgBase*);
 
 	typedef void(*CProtoBufMsgBase_InitFromPacket_t)(CProtoBufMsgBase*, void*);
@@ -92,7 +96,7 @@ namespace Hooks
 	typedef gameserverdetails_t*(*CSteamMatchmakingServers_GetServerDetails_t)(void*, uint32_t, uint32_t);
 	typedef uint32_t(*CSteamMatchmakingServers_RequestInternetServerList_t)(void*, uint32_t, uint32_t, uint32_t, uint32_t);
 
-	typedef uint32_t(*CClientUnifiedServiceMethod_SendAndRecvMsg_t)(void*, const char*, void*, void*, void*);
+	typedef uint32_t(*CClientUnifiedServiceMethod_SendAndRecvMsg_t)(CClientUnifiedServiceTransport*, const char*, void*, void*, void*);
 
 	typedef uint32_t(*CUser_CheckAppOwnership_t)(void*, uint32_t, CAppOwnershipInfo*);
 	typedef uint32_t(*CUser_GetSubscribedApps_t)(void*, uint32_t*, uint32_t, uint8_t);
@@ -108,6 +112,8 @@ namespace Hooks
 	typedef bool(*IClientUtils_GetOfflineMode_t)(void*);
 
 	extern DetourHook<TraceIPC_t> TraceIPC;
+
+	extern DetourHook<CAPIJob_SendAndRecv_t> CAPIJob_SendAndRecv;
 
 	extern DetourHook<CAppDataCache_BParseResponseFromMessage_t> CAppDataCache_BParseResponseFromMessage;
 

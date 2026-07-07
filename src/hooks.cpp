@@ -6,6 +6,8 @@
 #include "log.hpp"
 #include "memhlp.hpp"
 #include "patterns.hpp"
+#include "sdk/CAPIJob.hpp"
+#include "sdk/CClientUnifiedServiceTransport.hpp"
 #include "vftableinfo.hpp"
 
 #include "sdk/CAppOwnershipInfo.hpp"
@@ -167,6 +169,33 @@ static void hkTraceIPC(const char* iface, const char* fn)
 	}
 }
 
+static uint32_t hkAPIJob_SendAndRecv(CAPIJob* pAPIJob, CProtoBufMsgBase* send, uint32_t a2, uint32_t timeOut, CProtoBufMsgBase* recv, uint32_t targetType)
+{
+	uint32_t ret = 0;
+	bool grabbedSchema = Achievements::sendAndRecvGetUserStats(pAPIJob, send, timeOut, recv, targetType);
+
+	if (!grabbedSchema)
+	{
+		ret = Hooks::CAPIJob_SendAndRecv.tramp.fn(pAPIJob, send, a2, timeOut, recv, targetType);
+	}
+
+	g_pLog->debug
+	(
+		"%s(%p, %s, %u, %u, %s, %u) -> %u\n",
+
+		Hooks::CAPIJob_SendAndRecv.name.c_str(),
+		pAPIJob,
+		MemHlp::getTypeName(send),
+		a2,
+		timeOut,
+		MemHlp::getTypeName(recv),
+		targetType,
+		ret
+	);
+
+	return ret;
+}
+
 static uint32_t hkAppDataCache_BParseResponseFromMessage(void* pAppDataCache, CProtoBufMsgBase* pMsg)
 {
 	const uint32_t ret = Hooks::CAppDataCache_BParseResponseFromMessage.tramp.fn(pAppDataCache, pMsg);
@@ -196,14 +225,12 @@ static void hkProtoBufMsgBase_InitFromPacket(CProtoBufMsgBase* pMsg, void* pSrc)
 
 	g_pLog->debug("Received ProtoBufMsg of type %u with type %s\n", pMsg->type, MemHlp::getTypeName(pMsg));
 
-	Achievements::recvMessage(pMsg);
 	Misc::recvMsg(pMsg);
 	Ticket::recvMsg(pMsg);
 }
 
 static uint32_t hkProtoBufMsgBase_Send(CProtoBufMsgBase* pMsg)
 {
-	Achievements::sendMessage(pMsg);
 	Apps::sendMsg(pMsg);
 	FakeAppIds::sendMsg(pMsg);
 
@@ -288,16 +315,25 @@ static uint32_t hkSteamMatchmakingServers_RequestInternetServerList(void* pSteam
 	return handle;
 }
 
-static uint32_t hkClientUnifiedServiceTransport_SendAndRecvMsg(void* pUnifiedServiceTransport, const char* name, void* send, void* recv, void* arg4)
+static uint32_t hkClientUnifiedServiceTransport_SendAndRecvMsg(CClientUnifiedServiceTransport* pUnifiedServiceTransport, const char* name, void* send, void* recv, void* arg4)
 {
-	bool clearStats = false;
-	const bool isGetPlayerStats = strcmp(name, "Player.GetUserStats#1") == 0;
-	if (isGetPlayerStats)
+	uint32_t ret = 0;
+
+	if (strcmp(name, Achievements::GET_PLAYER_STATS_SERVICE_NAME) == 0)
 	{
-		clearStats = Achievements::sendGetPlayerStats(reinterpret_cast<CPlayer_GetUserStats_Request*>(send));
+		ret = Achievements::sendAndRecvGetPlayerStats
+		(
+			pUnifiedServiceTransport,
+			reinterpret_cast<CPlayer_GetUserStats_Request*>(send),
+			reinterpret_cast<CPlayer_GetUserStats_Response*>(recv)
+		);
 	}
 
-	const uint32_t ret = Hooks::CClientUnifiedServiceMethod_SendAndRecvMsg.tramp.fn(pUnifiedServiceTransport, name, send, recv, arg4);
+	if (ret == 0)
+	{
+		ret = Hooks::CClientUnifiedServiceMethod_SendAndRecvMsg.tramp.fn(pUnifiedServiceTransport, name, send, recv, arg4);
+	}
+
 	g_pLog->debug
 	(
 		"%s(%p, %s, %s, %s, %p) -> %u\n",
@@ -310,19 +346,6 @@ static uint32_t hkClientUnifiedServiceTransport_SendAndRecvMsg(void* pUnifiedSer
 		arg4,
 		ret
 	);
-
-	if (isGetPlayerStats)
-	{
-		if (clearStats)
-		{
-			Achievements::recvGetPlayerStatsResponse(reinterpret_cast<CPlayer_GetUserStats_Response*>(recv));
-		}
-		//Use offline cache when request fails for any reason
-		else if(ret != ERESULT_OK)
-		{
-			return ERESULT_NO_CONNECTION;
-		}
-	}
 
 	return ret;
 }
@@ -988,6 +1011,8 @@ namespace Hooks
 	DetourHook<IClientUser_RunIPCFrame_t> IClientUser_RunIPCFrame;
 	DetourHook<IClientUserStats_RunIPCFrame_t> IClientUserStats_RunIPCFrame;
 
+	DetourHook<CAPIJob_SendAndRecv_t> CAPIJob_SendAndRecv;
+
 	DetourHook<CAppDataCache_BParseResponseFromMessage_t> CAppDataCache_BParseResponseFromMessage;
 
 	DetourHook<CProtoBufMsgBase_InitFromPacket_t> CProtoBufMsgBase_InitFromPacket;
@@ -1043,6 +1068,8 @@ bool Hooks::setup()
 	bool succeeded =
 		TraceIPC.setup(Patterns::TraceIPC, &hkTraceIPC)
 
+		&& CAPIJob_SendAndRecv.setup(Patterns::CAPIJob::SendAndRecv, &hkAPIJob_SendAndRecv)
+
 		&& CAppDataCache_BParseResponseFromMessage.setup(Patterns::CAppDataCache::BParseResponseMessage, &hkAppDataCache_BParseResponseFromMessage)
 
 		&& CProtoBufMsgBase_InitFromPacket.setup(Patterns::CProtoBufMsgBase::InitFromPacket, &hkProtoBufMsgBase_InitFromPacket)
@@ -1094,6 +1121,8 @@ void Hooks::place()
 	//Detours
 	TraceIPC.place();
 
+	CAPIJob_SendAndRecv.place();
+
 	CAppDataCache_BParseResponseFromMessage.place();
 
 	CProtoBufMsgBase_InitFromPacket.place();
@@ -1136,6 +1165,8 @@ void Hooks::remove()
 {
 	//Detours
 	TraceIPC.remove();
+
+	CAPIJob_SendAndRecv.remove();
 
 	CAppDataCache_BParseResponseFromMessage.place();
 

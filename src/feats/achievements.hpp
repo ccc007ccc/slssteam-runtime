@@ -2,25 +2,23 @@
 
 #include <cstdint>
 #include <string>
+#include <unordered_set>
 
-class CMsgClientGetUserStats;
-class CMsgClientGetUserStatsResponse;
-
-class CProtoBufMsgBase;
-
+class CAPIJob;
+class CClientUnifiedServiceTransport;
 class CPlayer_GetUserStats_Request;
 class CPlayer_GetUserStats_Response;
+class CProtoBufMsgBase;
 
 namespace Achievements
 {
+	constexpr const char* GET_PLAYER_STATS_SERVICE_NAME = "Player.GetUserStats#1";
+
 	std::string getReviewUrl(uint32_t appId);
-	uint64_t getPublicProfileForGame(uint32_t appId);
+	std::unordered_set<uint64_t> getOwnersForGame(uint32_t appId);
 
-	void recvGetPlayerStatsResponse(CPlayer_GetUserStats_Response* msg);
-	void recvGetUserStatsResponse(CMsgClientGetUserStatsResponse* msg);
-	void recvMessage(CProtoBufMsgBase* msg);
-
-	bool sendGetPlayerStats(CPlayer_GetUserStats_Request* msg);
-	void sendGetUserStats(CMsgClientGetUserStats* msg);
-	void sendMessage(CProtoBufMsgBase* msg);
+	//CPlayer_GetUserStats
+	uint32_t sendAndRecvGetPlayerStats(CClientUnifiedServiceTransport* serviceTransport, CPlayer_GetUserStats_Request* send, CPlayer_GetUserStats_Response* recv);
+	//GetUserStats
+	bool sendAndRecvGetUserStats(CAPIJob* job, CProtoBufMsgBase* send, uint32_t timeOut, CProtoBufMsgBase* recv, uint32_t targetType);
 }

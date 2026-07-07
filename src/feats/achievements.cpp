@@ -1,5 +1,7 @@
 #include "achievements.hpp"
 
+#include "../sdk/CAPIJob.hpp"
+#include "../sdk/CClientUnifiedServiceTransport.hpp"
 #include "../sdk/CProtoBufMsgBase.hpp"
 #include "../sdk/CSteamEngine.hpp"
 #include "../sdk/CUser.hpp"
@@ -8,7 +10,7 @@
 #include "../config.hpp"
 #include "../log.hpp"
 
-#include <cstring>
+#include <cstdint>
 #include <regex>
 #include <sstream>
 #include <string>
@@ -24,15 +26,16 @@ std::string Achievements::getReviewUrl(uint32_t appId)
 	return url.str();
 }
 
-uint64_t Achievements::getPublicProfileForGame(uint32_t appId)
+std::unordered_set<uint64_t> Achievements::getOwnersForGame(uint32_t appId)
 {
+	auto list = std::unordered_set<uint64_t>();
 	auto url = getReviewUrl(appId);
 
 	std::string reviews;
 	if(Curl::getString(url.c_str(), reviews))
 	{
 		g_pLog->debug("Failed to get reviewer list for %u!\n", appId);
-		return 0;
+		return list;
 	}
 
 	//g_pLog->debug("Downloaded reviewers %s\n", reviews.c_str());
@@ -56,121 +59,83 @@ uint64_t Achievements::getPublicProfileForGame(uint32_t appId)
 		}
 
 		g_pLog->debug("Extracted SteamId %s\n", steamIdMatch.str().c_str());
-		std::stringstream profileUrl;
-		profileUrl << "https://steamcommunity.com/profiles/" << steamIdMatch.str();
+		list.emplace(std::stoull(steamIdMatch.str().c_str()));
+	}
 
-		std::string profile;
-		if (Curl::getString(profileUrl.str().c_str(), profile))
+	return list;
+}
+
+uint32_t Achievements::sendAndRecvGetPlayerStats(CClientUnifiedServiceTransport* serviceTransport, CPlayer_GetUserStats_Request* send, CPlayer_GetUserStats_Response* recv)
+{
+	//Don't do anything for legit apps
+	if (g_pSteamEngine->getUser(0)->isSubscribed(send->appid()))
+	{
+		return ERESULT_NO_RESULT;
+	}
+
+	auto reviewers = getOwnersForGame(send->appid());
+
+	send->clear_crc_stats();
+
+	for(const auto& id : reviewers)
+	{
+		send->set_steamid(id);
+		g_pLog->debug("CPlayer_GetUserStats_Request->set_steamid(%llu)\n", id);
+
+		if (serviceTransport->sendAndRecvMsg(GET_PLAYER_STATS_SERVICE_NAME, send, recv) != ERESULT_OK)
 		{
-			g_pLog->debug("Failed to download profile from %s!\n", profileUrl.str().c_str());
 			continue;
 		}
 
-		std::regex gamesRe("a href=\"https://steamcommunity.com/.*/games/.*\"");
-		std::smatch gamesLinkMatch;
+		//Clear stats so steam merges them for us
+		recv->clear_crc_stats();
+		recv->clear_stats();
 
-		if (!std::regex_search(profile, gamesLinkMatch, gamesRe)) //Check for presence of games tab
+		g_pLog->debug("Using stats from %llu for %u\n", id, send->appid());
+		return ERESULT_OK;
+	}
+
+	g_pLog->debug("No schemas for %u found! Falling back to offline cache\n", send->appid());
+	return ERESULT_NO_CONNECTION;
+}
+
+bool Achievements::sendAndRecvGetUserStats(CAPIJob* job, CProtoBufMsgBase* send, uint32_t timeOut, CProtoBufMsgBase* recv, uint32_t targetType)
+{
+	auto sendBdy = send->getBody<CMsgClientGetUserStats>();
+
+	if (g_pSteamEngine->getUser(0)->isSubscribed(sendBdy->game_id()))
+	{
+		return false;
+	}
+
+	auto recvBdy = recv->getBody<CMsgClientGetUserStatsResponse>();
+	auto owners = getOwnersForGame(sendBdy->game_id());
+
+	sendBdy->clear_crc_stats();
+
+	for(const auto& id : owners)
+	{
+		sendBdy->set_steam_id_for_user(id);
+		g_pLog->debug("CMsgClientGetUserStats->set_steam_id_for_user(%llu)\n", id);
+
+		if (!job->sendAndRecv(send, timeOut, recv, targetType))
 		{
-			g_pLog->debug("Game list is private! Skipping\n");
 			continue;
 		}
 
-		return std::stoull(steamIdMatch.str().c_str());
+		if (recvBdy->eresult() != ERESULT_OK)
+		{
+			continue;
+		}
+		
+		recvBdy->clear_achievement_blocks();
+		recvBdy->clear_crc_stats();
+		recvBdy->clear_stats();
+
+		return true;
 	}
 
-	return 0;
-}
-
-void Achievements::recvGetPlayerStatsResponse(CPlayer_GetUserStats_Response* msg)
-{
-	msg->clear_crc_stats();
-	msg->clear_stats();
-}
-
-void Achievements::recvGetUserStatsResponse(CMsgClientGetUserStatsResponse *msg)
-{
-	//Use offline cache when request fails for any reason
-	if (msg->eresult() != ERESULT_OK)
-	{
-		msg->set_eresult(ERESULT_NO_CONNECTION);
-		return;
-	}
-
-	if (g_pSteamEngine->getUser(0)->isSubscribed(msg->game_id()))
-	{
-		return;
-	}
-
-	msg->clear_achievement_blocks();
-	msg->clear_crc_stats();
-	msg->clear_stats(); //Clear stats so Steam merges the ones from disk for us
-}
-
-void Achievements::recvMessage(CProtoBufMsgBase* msg)
-{
-	switch(msg->type)
-	{
-		case EMSG_REQUEST_USERSTATS_RESPONSE:
-			recvGetUserStatsResponse(msg->getBody<CMsgClientGetUserStatsResponse>());
-			break;
-	}
-}
-
-bool Achievements::sendGetPlayerStats(CPlayer_GetUserStats_Request* msg)
-{
-	if (!g_config.maxSchemaTries.get())
-	{
-		return false;
-	}
-
-	if (g_pSteamEngine->getUser(0)->isSubscribed(msg->appid()))
-	{
-		return false;
-	}
-
-	uint64_t ownerId = getPublicProfileForGame(msg->appid());
-	if (!ownerId)
-	{
-		g_pLog->debug("No owner for %u found! Achievements won't be available\n", msg->appid());
-		return false;
-	}
-
-	msg->clear_crc_stats();
-	msg->set_steamid(ownerId);
-	g_pLog->debug("CPlayer_GetUserStats_Request->set_steamid(%llu)\n", ownerId);
+	g_pLog->debug("No schemas for %u found! Falling back to offline cache\n", sendBdy->game_id());
+	recvBdy->set_eresult(ERESULT_NO_CONNECTION);
 	return true;
-}
-
-void Achievements::sendGetUserStats(CMsgClientGetUserStats* msg)
-{
-	if (!g_config.maxSchemaTries.get())
-	{
-		return;
-	}
-
-	if (g_pSteamEngine->getUser(0)->isSubscribed(msg->game_id()))
-	{
-		return;
-	}
-
-	uint64_t ownerId = getPublicProfileForGame(msg->game_id());
-	if (!ownerId)
-	{
-		g_pLog->debug("No owner for %u found! Achievements won't be available\n", msg->game_id());
-		return;
-	}
-
-	msg->clear_crc_stats();
-	msg->set_steam_id_for_user(ownerId);
-	g_pLog->debug("CMsgClientGetUserStats->set_steam_id_for_user(%llu)\n", ownerId);
-}
-
-void Achievements::sendMessage(CProtoBufMsgBase* msg)
-{
-	switch(msg->type)
-	{
-		case EMSG_REQUEST_USERSTATS:
-			sendGetUserStats(msg->getBody<CMsgClientGetUserStats>());
-			break;
-	}
 }
