@@ -5,6 +5,7 @@
 #include "../sdk/CProtoBufMsgBase.hpp"
 #include "../sdk/CSteamEngine.hpp"
 #include "../sdk/CUser.hpp"
+#include "../sdk/EResult.hpp"
 
 #include "../curl.hpp"
 #include "../config.hpp"
@@ -26,7 +27,7 @@ std::string Achievements::getReviewUrl(uint32_t appId)
 	return url.str();
 }
 
-std::unordered_set<uint64_t> Achievements::getOwnersForGame(uint32_t appId)
+std::unordered_set<uint64_t> Achievements::getReviewersForGame(uint32_t appId)
 {
 	auto list = std::unordered_set<uint64_t>();
 	if (!g_config.maxSchemaTries.get())
@@ -78,7 +79,7 @@ uint32_t Achievements::sendAndRecvGetPlayerStats(CClientUnifiedServiceTransport*
 		return ERESULT_NO_RESULT;
 	}
 
-	auto reviewers = getOwnersForGame(send->appid());
+	const auto reviewers = getReviewersForGame(send->appid());
 
 	send->clear_crc_stats();
 
@@ -96,7 +97,7 @@ uint32_t Achievements::sendAndRecvGetPlayerStats(CClientUnifiedServiceTransport*
 		recv->clear_crc_stats();
 		recv->clear_stats();
 
-		g_pLog->debug("Using stats from %llu for %u\n", id, send->appid());
+		g_pLog->debug("Using schema from %llu for %u\n", id, send->appid());
 		return ERESULT_OK;
 	}
 
@@ -104,21 +105,21 @@ uint32_t Achievements::sendAndRecvGetPlayerStats(CClientUnifiedServiceTransport*
 	return ERESULT_NO_CONNECTION;
 }
 
-uint32_t Achievements::sendAndRecvGetUserStats(CAPIJob* job, CProtoBufMsgBase* send, uint32_t timeOut, CProtoBufMsgBase* recv, uint32_t targetType)
+uint32_t Achievements::sendAndRecvGetUserStats(CAPIJob* job, CProtoBufMsgBase* send, const uint32_t timeOut, CProtoBufMsgBase* recv, const uint32_t targetType)
 {
-	auto sendBdy = send->getBody<CMsgClientGetUserStats>();
+	const auto sendBdy = send->getBody<CMsgClientGetUserStats>();
 
 	if (g_pSteamEngine->getUser(0)->isSubscribed(sendBdy->game_id()))
 	{
 		return 0;
 	}
 
-	auto recvBdy = recv->getBody<CMsgClientGetUserStatsResponse>();
-	auto owners = getOwnersForGame(sendBdy->game_id());
+	const auto recvBdy = recv->getBody<CMsgClientGetUserStatsResponse>();
+	const auto reviewers = getReviewersForGame(sendBdy->game_id());
 
 	sendBdy->clear_crc_stats();
 
-	for(const auto& id : owners)
+	for(const auto& id : reviewers)
 	{
 		sendBdy->set_steam_id_for_user(id);
 		g_pLog->debug("CMsgClientGetUserStats->set_steam_id_for_user(%llu)\n", id);
@@ -137,6 +138,8 @@ uint32_t Achievements::sendAndRecvGetUserStats(CAPIJob* job, CProtoBufMsgBase* s
 		recvBdy->clear_achievement_blocks();
 		recvBdy->clear_crc_stats();
 		recvBdy->clear_stats();
+
+		g_pLog->debug("Using schema from %llu for %u\n", id, recvBdy->game_id());
 
 		return ret;
 	}
