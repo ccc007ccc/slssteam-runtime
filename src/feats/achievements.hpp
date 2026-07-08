@@ -18,7 +18,13 @@ namespace Achievements
 	std::unordered_set<uint64_t> getReviewersForGame(uint32_t appId);
 
 	//CPlayer_GetUserStats
-	uint32_t sendAndRecvGetPlayerStats(CClientUnifiedServiceTransport* serviceTransport, CPlayer_GetUserStats_Request* send, CPlayer_GetUserStats_Response* recv);
+	uint32_t sendAndRecvGetPlayerStats
+	(
+		CClientUnifiedServiceTransport* serviceTransport,
+		const char* serviceName,
+		CPlayer_GetUserStats_Request* send,
+		CPlayer_GetUserStats_Response* recv
+	);
 	//GetUserStats
 	uint32_t sendAndRecvGetUserStats(CAPIJob* job, CProtoBufMsgBase* send, const uint32_t timeOut, CProtoBufMsgBase* recv, const uint32_t targetType);
 }

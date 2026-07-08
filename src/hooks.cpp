@@ -316,19 +316,15 @@ static uint32_t hkSteamMatchmakingServers_RequestInternetServerList(void* pSteam
 
 static uint32_t hkClientUnifiedServiceTransport_SendAndRecvMsg(CClientUnifiedServiceTransport* pUnifiedServiceTransport, const char* name, void* send, void* recv, void* arg4)
 {
-	uint32_t ret = 0;
+	uint32_t ret = Achievements::sendAndRecvGetPlayerStats
+	(
+		pUnifiedServiceTransport,
+		name,
+		reinterpret_cast<CPlayer_GetUserStats_Request*>(send),
+		reinterpret_cast<CPlayer_GetUserStats_Response*>(recv)
+	);
 
-	if (strcmp(name, Achievements::GET_PLAYER_STATS_SERVICE_NAME) == 0)
-	{
-		ret = Achievements::sendAndRecvGetPlayerStats
-		(
-			pUnifiedServiceTransport,
-			reinterpret_cast<CPlayer_GetUserStats_Request*>(send),
-			reinterpret_cast<CPlayer_GetUserStats_Response*>(recv)
-		);
-	}
-
-	if (ret == 0)
+	if (ret == ERESULT_NO_RESULT)
 	{
 		ret = Hooks::CClientUnifiedServiceMethod_SendAndRecvMsg.tramp.fn(pUnifiedServiceTransport, name, send, recv, arg4);
 	}

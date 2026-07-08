@@ -12,6 +12,7 @@
 #include "../log.hpp"
 
 #include <cstdint>
+#include <cstring>
 #include <regex>
 #include <sstream>
 #include <string>
@@ -71,8 +72,19 @@ std::unordered_set<uint64_t> Achievements::getReviewersForGame(uint32_t appId)
 	return list;
 }
 
-uint32_t Achievements::sendAndRecvGetPlayerStats(CClientUnifiedServiceTransport* serviceTransport, CPlayer_GetUserStats_Request* send, CPlayer_GetUserStats_Response* recv)
+uint32_t Achievements::sendAndRecvGetPlayerStats
+(
+	CClientUnifiedServiceTransport* serviceTransport,
+	const char* serviceName,
+	CPlayer_GetUserStats_Request* send,
+	CPlayer_GetUserStats_Response* recv
+)
 {
+	if (strcmp(serviceName, GET_PLAYER_STATS_SERVICE_NAME) != 0)
+	{
+		return ERESULT_NO_RESULT;
+	}
+
 	//Don't do anything for legit apps
 	if (g_pSteamEngine->getUser(0)->isSubscribed(send->appid()))
 	{
@@ -107,6 +119,11 @@ uint32_t Achievements::sendAndRecvGetPlayerStats(CClientUnifiedServiceTransport*
 
 uint32_t Achievements::sendAndRecvGetUserStats(CAPIJob* job, CProtoBufMsgBase* send, const uint32_t timeOut, CProtoBufMsgBase* recv, const uint32_t targetType)
 {
+	if (targetType != EMSG_REQUEST_USERSTATS_RESPONSE)
+	{
+		return 0;
+	}
+
 	const auto sendBdy = send->getBody<CMsgClientGetUserStats>();
 
 	if (g_pSteamEngine->getUser(0)->isSubscribed(sendBdy->game_id()))
