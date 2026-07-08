@@ -29,9 +29,14 @@ std::string Achievements::getReviewUrl(uint32_t appId)
 std::unordered_set<uint64_t> Achievements::getOwnersForGame(uint32_t appId)
 {
 	auto list = std::unordered_set<uint64_t>();
-	auto url = getReviewUrl(appId);
+	if (!g_config.maxSchemaTries.get())
+	{
+		return list;
+	}
 
+	auto url = getReviewUrl(appId);
 	std::string reviews;
+
 	if(Curl::getString(url.c_str(), reviews))
 	{
 		g_pLog->debug("Failed to get reviewer list for %u!\n", appId);

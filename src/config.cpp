@@ -142,7 +142,7 @@ bool CConfig::loadSettings(bool firstLoad)
 	//TODO: Create smart logging function to log them automatically via getSetting
 	g_pLog->info("DisableFamilyShareLock: %i\n", disableFamilyLock.get());
 	g_pLog->info("UseWhitelist: %i\n", useWhiteList.get());
-	g_pLog->info("MaxSchemaTries: %i\n", maxSchemaTries.get());
+	g_pLog->info("MaxSchemaTries: %u\n", maxSchemaTries.get());
 	g_pLog->info("SafeMode: %i\n", safeMode.get());
 	g_pLog->info("Notifications: %i\n", notifications.get());
 	g_pLog->info("WarnHashMissmatch: %i\n", warnHashMissmatch.get());
