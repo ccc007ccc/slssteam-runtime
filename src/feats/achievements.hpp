@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 
 class CAPIJob;
@@ -13,6 +14,8 @@ class CProtoBufMsgBase;
 namespace Achievements
 {
 	constexpr const char* GET_PLAYER_STATS_SERVICE_NAME = "Player.GetUserStats#1";
+
+	extern std::unordered_map<uint32_t, std::unordered_set<uint64_t>> ownerBlacklist;
 
 	std::string getReviewUrl(uint32_t appId);
 	std::unordered_set<uint64_t> getReviewersForGame(uint32_t appId);

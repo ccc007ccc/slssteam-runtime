@@ -18,6 +18,9 @@
 #include <string>
 
 
+std::unordered_map<uint32_t, std::unordered_set<uint64_t>> Achievements::ownerBlacklist;
+
+
 std::string Achievements::getReviewUrl(uint32_t appId)
 {
 	std::stringstream url;
@@ -45,6 +48,11 @@ std::unordered_set<uint64_t> Achievements::getReviewersForGame(uint32_t appId)
 		return list;
 	}
 
+	if (!ownerBlacklist.contains(appId))
+	{
+		ownerBlacklist[appId] = std::unordered_set<uint64_t>();
+	}
+
 	//g_pLog->debug("Downloaded reviewers %s\n", reviews.c_str());
 
 	std::regex steamIdFieldsRe("\"steamid\":\"[0-9]+\"");
@@ -66,7 +74,15 @@ std::unordered_set<uint64_t> Achievements::getReviewersForGame(uint32_t appId)
 		}
 
 		g_pLog->debug("Extracted SteamId %s\n", steamIdMatch.str().c_str());
-		list.emplace(std::stoull(steamIdMatch.str().c_str()));
+
+		uint64_t steamId = std::stoull(steamIdMatch.str().c_str());
+		if (ownerBlacklist[appId].contains(steamId))
+		{
+			g_pLog->debug("Skipping %llu for %u because it has failed before\n", steamId, appId);
+			continue;
+		}
+
+		list.emplace(steamId);
 	}
 
 	return list;
@@ -100,8 +116,16 @@ uint32_t Achievements::sendAndRecvGetPlayerStats
 		send->set_steamid(id);
 		g_pLog->debug("CPlayer_GetUserStats_Request->set_steamid(%llu)\n", id);
 
-		if (serviceTransport->sendAndRecvMsg(GET_PLAYER_STATS_SERVICE_NAME, send, recv) != ERESULT_OK)
+		const auto res = serviceTransport->sendAndRecvMsg(GET_PLAYER_STATS_SERVICE_NAME, send, recv);
+
+		if (res != ERESULT_OK)
 		{
+			if (res == ERESULT_FAILURE)
+			{
+				//Only blacklist confirmed failures, exclude NO_CONNECTION and whatever else could happen
+				ownerBlacklist[send->appid()].emplace(id);
+			}
+
 			continue;
 		}
 
@@ -149,6 +173,12 @@ uint32_t Achievements::sendAndRecvGetUserStats(CAPIJob* job, CProtoBufMsgBase* s
 
 		if (recvBdy->eresult() != ERESULT_OK)
 		{
+			if (recvBdy->eresult() == ERESULT_FAILURE)
+			{
+				//Only blacklist confirmed failures, exclude NO_CONNECTION and whatever else could happen
+				ownerBlacklist[recvBdy->game_id()].emplace(id);
+			}
+
 			continue;
 		}
 		
