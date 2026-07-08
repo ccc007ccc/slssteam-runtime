@@ -93,6 +93,11 @@ bool Apps::checkAppOwnership(uint32_t appId, CAppOwnershipInfo* pInfo)
 		pInfo->purchaseTime = times.at(appId);
 	}
 
+	if (!g_config.isAddedAppId(appId))
+	{
+		return false;
+	}
+
 	unlockApp(appId, pInfo);
 
 	return true;
