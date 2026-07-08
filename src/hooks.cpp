@@ -212,6 +212,37 @@ static uint32_t hkAppDataCache_BParseResponseFromMessage(void* pAppDataCache, CP
 	return ret;
 }
 
+static uint32_t hkClientUnifiedServiceTransport_SendAndRecvMsg(CClientUnifiedServiceTransport* pUnifiedServiceTransport, const char* name, void* send, void* recv, void* arg4)
+{
+	uint32_t ret = Achievements::sendAndRecvGetPlayerStats
+	(
+		pUnifiedServiceTransport,
+		name,
+		reinterpret_cast<CPlayer_GetUserStats_Request*>(send),
+		reinterpret_cast<CPlayer_GetUserStats_Response*>(recv)
+	);
+
+	if (ret == ERESULT_NO_RESULT)
+	{
+		ret = Hooks::CClientUnifiedServiceMethod_SendAndRecvMsg.tramp.fn(pUnifiedServiceTransport, name, send, recv, arg4);
+	}
+
+	g_pLog->debug
+	(
+		"%s(%p, %s, %s, %s, %p) -> %u\n",
+
+		Hooks::CClientUnifiedServiceMethod_SendAndRecvMsg.name.c_str(),
+		pUnifiedServiceTransport,
+		name,
+		MemHlp::getTypeName(send),
+		MemHlp::getTypeName(recv),
+		arg4,
+		ret
+	);
+
+	return ret;
+}
+
 static void hkProtoBufMsgBase_InitFromPacket(CProtoBufMsgBase* pMsg, void* pSrc)
 {
 	Hooks::CProtoBufMsgBase_InitFromPacket.tramp.fn(pMsg, pSrc);
@@ -312,37 +343,6 @@ static uint32_t hkSteamMatchmakingServers_RequestInternetServerList(void* pSteam
 	FakeAppIds::fakeAppIdMapServer[handle] = appId;
 
 	return handle;
-}
-
-static uint32_t hkClientUnifiedServiceTransport_SendAndRecvMsg(CClientUnifiedServiceTransport* pUnifiedServiceTransport, const char* name, void* send, void* recv, void* arg4)
-{
-	uint32_t ret = Achievements::sendAndRecvGetPlayerStats
-	(
-		pUnifiedServiceTransport,
-		name,
-		reinterpret_cast<CPlayer_GetUserStats_Request*>(send),
-		reinterpret_cast<CPlayer_GetUserStats_Response*>(recv)
-	);
-
-	if (ret == ERESULT_NO_RESULT)
-	{
-		ret = Hooks::CClientUnifiedServiceMethod_SendAndRecvMsg.tramp.fn(pUnifiedServiceTransport, name, send, recv, arg4);
-	}
-
-	g_pLog->debug
-	(
-		"%s(%p, %s, %s, %s, %p) -> %u\n",
-
-		Hooks::CClientUnifiedServiceMethod_SendAndRecvMsg.name.c_str(),
-		pUnifiedServiceTransport,
-		name,
-		MemHlp::getTypeName(send),
-		MemHlp::getTypeName(recv),
-		arg4,
-		ret
-	);
-
-	return ret;
 }
 
 __attribute__((hot))
@@ -1010,6 +1010,8 @@ namespace Hooks
 
 	DetourHook<CAppDataCache_BParseResponseFromMessage_t> CAppDataCache_BParseResponseFromMessage;
 
+	DetourHook<CClientUnifiedServiceMethod_SendAndRecvMsg_t> CClientUnifiedServiceMethod_SendAndRecvMsg;
+
 	DetourHook<CProtoBufMsgBase_InitFromPacket_t> CProtoBufMsgBase_InitFromPacket;
 	DetourHook<CProtoBufMsgBase_Send_t> CProtoBufMsgBase_Send;
 
@@ -1018,8 +1020,6 @@ namespace Hooks
 
 	DetourHook<CSteamEngine_Init_t> CSteamEngine_Init;
 	DetourHook<CSteamEngine_SetAppIdForCurrentPipe_t> CSteamEngine_SetAppIdForCurrentPipe;
-
-	DetourHook<CClientUnifiedServiceMethod_SendAndRecvMsg_t> CClientUnifiedServiceMethod_SendAndRecvMsg;
 
 	DetourHook<CUser_CheckAppOwnership_t> CUser_CheckAppOwnership;
 	DetourHook<CUser_GetSubscribedApps_t> CUser_GetSubscribedApps;
@@ -1063,17 +1063,25 @@ bool Hooks::setup()
 	bool succeeded =
 		TraceIPC.setup(Patterns::TraceIPC, &hkTraceIPC)
 
+		&& IClientApps_RunIPCFrame.setup(Patterns::IClientApps::RunIPCFrame, hkClientApps_RunIPCFrame)
+		&& IClientAppManager_RunIPCFrame.setup(Patterns::IClientAppManager::RunIPCFrame, hkClientAppManager_RunIPCFrame)
+		&& IClientRemoteStorage_RunIPCFrame.setup(Patterns::IClientRemoteStorage::RunIPCFrame, hkClientRemoteStorage_RunIPCFrame)
+		&& IClientUGC_RunIPCFrame.setup(Patterns::IClientUGC::RunIPCFrame, hkClientUGC_RunIPCFrame)
+		&& IClientUtils_RunIPCFrame.setup(Patterns::IClientUtils::RunIPCFrame, hkClientUtils_RunIPCFrame)
+		&& IClientUser_RunIPCFrame.setup(Patterns::IClientUser::RunIPCFrame, hkClientUser_RunIPCFrame)
+		&& IClientUserStats_RunIPCFrame.setup(Patterns::IClientUserStats::RunIPCFrame, hkClientUserStats_RunIPCFrame)
+
 		&& CAPIJob_SendAndRecv.setup(Patterns::CAPIJob::SendAndRecv, &hkAPIJob_SendAndRecv)
 
 		&& CAppDataCache_BParseResponseFromMessage.setup(Patterns::CAppDataCache::BParseResponseMessage, &hkAppDataCache_BParseResponseFromMessage)
+
+		&& CClientUnifiedServiceMethod_SendAndRecvMsg.setup(Patterns::CClientUnifiedServiceTransport::SendAndRecvMsg, &hkClientUnifiedServiceTransport_SendAndRecvMsg)
 
 		&& CProtoBufMsgBase_InitFromPacket.setup(Patterns::CProtoBufMsgBase::InitFromPacket, &hkProtoBufMsgBase_InitFromPacket)
 		&& CProtoBufMsgBase_Send.setup(Patterns::CProtoBufMsgBase::Send, &hkProtoBufMsgBase_Send)
 
 		&& CSteamMatchmakingServers_GetServerDetails.setup(Patterns::CSteamMatchmakingServers::GetServerDetails, &hkSteamMatchmakingServers_GetServerDetails)
 		&& CSteamMatchmakingServers_RequestInternetServerList.setup(Patterns::CSteamMatchmakingServers::RequestInternetServerList, &hkSteamMatchmakingServers_RequestInternetServerList)
-
-		&& CClientUnifiedServiceMethod_SendAndRecvMsg.setup(Patterns::CClientUnifiedServiceTransport::SendAndRecvMsg, &hkClientUnifiedServiceTransport_SendAndRecvMsg)
 
 		&& CUser_CheckAppOwnership.setup(Patterns::CUser::CheckAppOwnership, &hkUser_CheckAppOwnership)
 		&& CUser_GetSubscribedApps.setup(Patterns::CUser::GetSubscribedApps, &hkUser_GetSubscribedApps)
@@ -1083,14 +1091,6 @@ bool Hooks::setup()
 
 		&& IClientAppManager_BCanRemotePlayTogether.setup(Patterns::IClientAppManager::BCanRemotePlayTogether, hkClientAppManager_BCanRemotePlayTogether)
 		&& IClientAppManager_GetAppStateInfo.setup(Patterns::IClientAppManager::GetAppStateInfo, hkClientAppManager_GetAppStateInfo)
-
-		&& IClientApps_RunIPCFrame.setup(Patterns::IClientApps::RunIPCFrame, hkClientApps_RunIPCFrame)
-		&& IClientAppManager_RunIPCFrame.setup(Patterns::IClientAppManager::RunIPCFrame, hkClientAppManager_RunIPCFrame)
-		&& IClientRemoteStorage_RunIPCFrame.setup(Patterns::IClientRemoteStorage::RunIPCFrame, hkClientRemoteStorage_RunIPCFrame)
-		&& IClientUGC_RunIPCFrame.setup(Patterns::IClientUGC::RunIPCFrame, hkClientUGC_RunIPCFrame)
-		&& IClientUtils_RunIPCFrame.setup(Patterns::IClientUtils::RunIPCFrame, hkClientUtils_RunIPCFrame)
-		&& IClientUser_RunIPCFrame.setup(Patterns::IClientUser::RunIPCFrame, hkClientUser_RunIPCFrame)
-		&& IClientUserStats_RunIPCFrame.setup(Patterns::IClientUserStats::RunIPCFrame, hkClientUserStats_RunIPCFrame)
 
 		&& IClientUser_BLoggedOn.setup(Patterns::IClientUser::BLoggedOn, &hkClientUser_BLoggedOn)
 		&& IClientUser_BUpdateAppOwnershipTicket.setup(Patterns::IClientUser::BUpdateAppOwnershipTicket, hkClientUser_BUpdateOwnershipTicket)
@@ -1116,9 +1116,19 @@ void Hooks::place()
 	//Detours
 	TraceIPC.place();
 
+	IClientApps_RunIPCFrame.place();
+	IClientAppManager_RunIPCFrame.place();
+	IClientRemoteStorage_RunIPCFrame.place();
+	IClientUGC_RunIPCFrame.place();
+	IClientUtils_RunIPCFrame.place();
+	IClientUser_RunIPCFrame.place();
+	IClientUserStats_RunIPCFrame.place();
+
 	CAPIJob_SendAndRecv.place();
 
 	CAppDataCache_BParseResponseFromMessage.place();
+
+	CClientUnifiedServiceMethod_SendAndRecvMsg.place();
 
 	CProtoBufMsgBase_InitFromPacket.place();
 	CProtoBufMsgBase_Send.place();
@@ -1129,21 +1139,11 @@ void Hooks::place()
 	CSteamMatchmakingServers_GetServerDetails.place();
 	CSteamMatchmakingServers_RequestInternetServerList.place();
 
-	CClientUnifiedServiceMethod_SendAndRecvMsg.place();
-
 	CUser_CheckAppOwnership.place();
 	CUser_GetSubscribedApps.place();
 
 	IClientAppManager_BCanRemotePlayTogether.place();
 	IClientAppManager_GetAppStateInfo.place();
-
-	IClientApps_RunIPCFrame.place();
-	IClientAppManager_RunIPCFrame.place();
-	IClientRemoteStorage_RunIPCFrame.place();
-	IClientUGC_RunIPCFrame.place();
-	IClientUtils_RunIPCFrame.place();
-	IClientUser_RunIPCFrame.place();
-	IClientUserStats_RunIPCFrame.place();
 
 	IClientUser_BLoggedOn.place();
 	IClientUser_BUpdateAppOwnershipTicket.place();
@@ -1160,6 +1160,14 @@ void Hooks::remove()
 {
 	//Detours
 	TraceIPC.remove();
+
+	IClientApps_RunIPCFrame.remove();
+	IClientAppManager_RunIPCFrame.remove();
+	IClientRemoteStorage_RunIPCFrame.remove();
+	IClientUGC_RunIPCFrame.remove();
+	IClientUtils_RunIPCFrame.remove();
+	IClientUser_RunIPCFrame.remove();
+	IClientUserStats_RunIPCFrame.remove();
 
 	CAPIJob_SendAndRecv.remove();
 
@@ -1181,14 +1189,6 @@ void Hooks::remove()
 
 	IClientAppManager_BCanRemotePlayTogether.remove();
 	IClientAppManager_GetAppStateInfo.remove();
-
-	IClientApps_RunIPCFrame.remove();
-	IClientAppManager_RunIPCFrame.remove();
-	IClientRemoteStorage_RunIPCFrame.remove();
-	IClientUGC_RunIPCFrame.remove();
-	IClientUtils_RunIPCFrame.remove();
-	IClientUser_RunIPCFrame.remove();
-	IClientUserStats_RunIPCFrame.remove();
 
 	IClientUser_BLoggedOn.remove();
 	IClientUser_BUpdateAppOwnershipTicket.remove();
