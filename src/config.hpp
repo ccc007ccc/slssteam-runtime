@@ -106,7 +106,7 @@ public:
 			setError(ELoadError::ParsingException);
 			return defVal;
 		}
-	};
+	}
 
 	template<typename T>
 	std::unordered_set<T> getList(YAML::Node& rootNode, const char* name)
