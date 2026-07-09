@@ -11,7 +11,7 @@
 
 ## Getting started
 
-Check out the [Installation](https://github.com/AceSLS/SLSsteam/wiki/Installation) section in our Wiki!
+Check out the [Installation](https://github.com/AceSLS/SLSsteam/wiki/Installation) or the [Building from Source](https://github.com/AceSLS/SLSsteam/wiki/Building-from-Source) section in our Wiki!
 
 
 ## Hall of Fame aka Credits
