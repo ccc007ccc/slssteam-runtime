@@ -15,6 +15,8 @@ LDFLAGS := -shared -Wl,--no-undefined
 LDFLAGS += $(shell pkg-config --libs "openssl")
 LDFLAGS += $(shell pkg-config --libs "libcurl")
 
+JOBS := $(shell nproc)
+
 #DATE := $(shell date "+%Y%m%d%H%M%S")
 DATE := $(shell cat res/version.txt)
 
@@ -30,7 +32,8 @@ ifeq ($(shell type mold &> /dev/null && echo "found"),found)
 	LDFLAGS += -fuse-ld=mold
 endif
 
-audit-libs: bin/SLSsteam.so bin/library-inject.so tools/ticket-grabber/bin/Release/net9.0/linux-x64/publish/ticket-grabber tools/schema-grabber/bin/Release/net9.0/linux-x64/publish/schema-grabber
+audit-libs:
+	make -j $(JOBS) bin/SLSsteam.so bin/library-inject.so tools/ticket-grabber/bin/Release/net9.0/linux-x64/publish/ticket-grabber tools/schema-grabber/bin/Release/net9.0/linux-x64/publish/schema-grabber
 
 bin/SLSsteam.so: $(objs) $(libs)
 	@mkdir -p bin
@@ -110,4 +113,3 @@ rebuild: clean build
 all: clean build zips
 
 .PHONY: all build clean rebuild zips
-.NOTPARALLEL: clean rebuild zips
