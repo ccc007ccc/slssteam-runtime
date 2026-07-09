@@ -6,11 +6,11 @@
 #include "log.hpp"
 #include "memhlp.hpp"
 #include "patterns.hpp"
-#include "sdk/CAPIJob.hpp"
-#include "sdk/CClientUnifiedServiceTransport.hpp"
 #include "vftableinfo.hpp"
 
+#include "sdk/CAPIJob.hpp"
 #include "sdk/CAppOwnershipInfo.hpp"
+#include "sdk/CClientUnifiedServiceTransport.hpp"
 #include "sdk/CProtoBufMsgBase.hpp"
 #include "sdk/CSteamEngine.hpp"
 #include "sdk/CSteamMatchmakingServers.hpp"
