@@ -15,6 +15,7 @@
 
 #include <cmath>
 #include <mutex>
+#include <sstream>
 
 bool Apps::applistRequested;
 
@@ -191,6 +192,14 @@ void Apps::postAppLicensesChanged(const std::unordered_set<uint32_t>& apps)
 	{
 		user->postCallback(ECallbackType::AppLicensesChanged_t, &cb, sizeof(cb));
 	}
+
+	std::ostringstream appsLog;
+	for(const auto& app : apps)
+	{
+		appsLog << (appsLog.str().size() ? ", " : "") << app;
+	}
+
+	g_pLog->info("AppLicensesChanged callback invoked for %s!\n", appsLog.str().c_str());
 }
 
 void Apps::runIPCFrame()
