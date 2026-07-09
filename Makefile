@@ -65,7 +65,14 @@ obj/%.o : src/%.cpp
 	$(CXX) $(CXXFLAGS) -isysteminclude -MMD -MP -c $< -o $@
 
 clean:
-	rm -rvf "obj/" "bin/" "zips/" "tools/ticket-grabber/bin" "tools/schema-grabber/bin"
+	rm -rvf \
+		"obj/" \
+		"bin/" \
+		"zips/" \
+		"tools/ticket-grabber/bin" \
+		"tools/ticket-grabber/obj" \
+		"tools/schema-grabber/bin" \
+		"tools/schema-grabber/obj"
 
 install:
 	sh setup.sh
