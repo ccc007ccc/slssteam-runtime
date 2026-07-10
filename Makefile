@@ -33,7 +33,10 @@ ifeq ($(shell type mold &> /dev/null && echo "found"),found)
 endif
 
 audit-libs:
-	make -j $(JOBS) bin/SLSsteam.so bin/library-inject.so tools/ticket-grabber/bin/Release/net9.0/linux-x64/publish/ticket-grabber tools/schema-grabber/bin/Release/net9.0/linux-x64/publish/schema-grabber
+	make -j $(JOBS) bin/SLSsteam.so bin/library-inject.so
+
+tools:
+	make -j 2 tools/ticket-grabber/bin/Release/net9.0/linux-x64/publish/ticket-grabber tools/schema-grabber/bin/Release/net9.0/linux-x64/publish/schema-grabber
 
 bin/SLSsteam.so: $(objs) $(libs)
 	@mkdir -p bin
@@ -108,8 +111,7 @@ zips-config:
 	#Compatibility for Github issues
 	7z a -mx9 -m9=lzma2 "zips/SLSsteam - SLSConfig $(DATE).7z" "$(HOME)/.config/SLSsteam/config.yaml"
 
-build: audit-libs
+build: audit-libs tools
 rebuild: clean build
-all: clean build zips
 
-.PHONY: all build clean rebuild zips
+.PHONY: audit-libs tools build clean rebuild zips
