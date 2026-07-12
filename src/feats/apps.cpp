@@ -301,9 +301,12 @@ void Apps::sendGamesPlayed(CMsgClientGamesPlayed* msg)
 		else if (!owned || FakeAppIds::getFakeAppId(gameId))
 		{
 			char name[256] {}; //No clue how long titles can get
-			g_pClientApps->getAppData(gameId, "common/name", name, sizeof(name));
-			g_pLog->debug("AppName %s\n", name);
-			game.set_game_extra_info(name);
+			const int len = g_pClientApps->getAppData(gameId, "common/name", name, sizeof(name));
+			if (len > 0)
+			{
+				g_pLog->debug("AppName %s (%i)\n", name, len);
+				game.set_game_extra_info(name);
+			}
 		}
 
 		msg->mutable_games_played(i)->ParseFromString(game.SerializeAsString());
