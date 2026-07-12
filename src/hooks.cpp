@@ -402,12 +402,6 @@ static bool hkUserAppManager_BuildDepotDependency
 	bool* a6
 )
 {
-	if (Apps::shouldDisableUpdates(appId))
-	{
-		g_pLog->once("Disabled updates for %u\n", appId);
-		return 0;
-	}
-
 	const bool success = Hooks::CUserAppManager_BuildDepotDependency.tramp.fn(a0, appId, a2, depots, sharedDepots, a5, pBuildId, a6);
 
 	g_pLog->debug("%s(%p, %u) -> %i\n", Hooks::CUserAppManager_BuildDepotDependency.name.c_str(), a0, appId, success);
@@ -450,6 +444,25 @@ static bool hkClientAppManager_BCanRemotePlayTogether(void* pClientAppManager, u
 	);
 
 	return true;
+}
+
+static bool hkClientAppManager_GetAppStateInfo(void* pClientAppManager, uint32_t appId, AppStateInfo_t* info)
+{
+	const bool ret = Hooks::IClientAppManager_GetAppStateInfo.tramp.fn(pClientAppManager, appId, info);
+	g_pLog->debug
+	(
+		"%s(%p, %u, %p) -> %i\n",
+
+		Hooks::IClientAppManager_GetAppStateInfo.name.c_str(),
+		pClientAppManager,
+		appId,
+		info,
+		ret
+	);
+
+	Apps::getAppStateInfo(appId, info);
+
+	return ret;
 }
 
 static void* hkClientAppManager_LaunchApp(void* pClientAppManager, uint32_t* pAppId, void* a2, void* a3, void* a4)
@@ -1055,6 +1068,7 @@ namespace Hooks
 	DetourHook<CUserAppManager_BuildDepotDependency_t> CUserAppManager_BuildDepotDependency;
 
 	DetourHook<IClientAppManager_BCanRemotePlayTogether_t> IClientAppManager_BCanRemotePlayTogether;
+	DetourHook<IClientAppManager_GetAppStateInfo_t> IClientAppManager_GetAppStateInfo;
 
 	DetourHook<IClientUser_BLoggedOn_t> IClientUser_BLoggedOn;
 	DetourHook<IClientUser_BUpdateAppOwnershipTicket_t> IClientUser_BUpdateAppOwnershipTicket;
@@ -1121,6 +1135,7 @@ bool Hooks::setup()
 		&& CSteamEngine_SetAppIdForCurrentPipe.setup(Patterns::CSteamEngine::SetAppIdForCurrentPipe, &hkSteamEngine_SetAppIdForCurrentPipe)
 
 		&& IClientAppManager_BCanRemotePlayTogether.setup(Patterns::IClientAppManager::BCanRemotePlayTogether, hkClientAppManager_BCanRemotePlayTogether)
+		&& IClientAppManager_GetAppStateInfo.setup(Patterns::IClientAppManager::GetAppStateInfo, hkClientAppManager_GetAppStateInfo)
 
 		&& IClientUser_BLoggedOn.setup(Patterns::IClientUser::BLoggedOn, &hkClientUser_BLoggedOn)
 		&& IClientUser_BUpdateAppOwnershipTicket.setup(Patterns::IClientUser::BUpdateAppOwnershipTicket, hkClientUser_BUpdateOwnershipTicket)
@@ -1175,6 +1190,7 @@ void Hooks::place()
 	CUserAppManager_BuildDepotDependency.place();
 
 	IClientAppManager_BCanRemotePlayTogether.place();
+	IClientAppManager_GetAppStateInfo.place();
 
 	IClientUser_BLoggedOn.place();
 	IClientUser_BUpdateAppOwnershipTicket.place();
@@ -1221,6 +1237,7 @@ void Hooks::remove()
 	CUserAppManager_BuildDepotDependency.place();
 
 	IClientAppManager_BCanRemotePlayTogether.remove();
+	IClientAppManager_GetAppStateInfo.remove();
 
 	IClientUser_BLoggedOn.remove();
 	IClientUser_BUpdateAppOwnershipTicket.remove();

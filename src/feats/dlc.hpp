@@ -4,7 +4,7 @@
 #include <cstdint>
 
 
-class AppOwnershipInfo_t;
+struct AppOwnershipInfo_t;
 
 namespace DLC
 {

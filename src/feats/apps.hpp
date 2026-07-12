@@ -3,11 +3,13 @@
 #include <cstdint>
 #include <unordered_set>
 
-class AppOwnershipInfo_t;
 class CProtoBufMsgBase;
 class CMsgClientGamesPlayed;
 class CMsgClientPICSProductInfoRequest;
 class CMsgClientPICSProductInfoResponse;
+
+struct AppOwnershipInfo_t;
+struct AppStateInfo_t;
 
 namespace Apps
 {
@@ -17,6 +19,7 @@ namespace Apps
 	bool unlockApp(uint32_t appId, AppOwnershipInfo_t* info);
 
 	bool checkAppOwnership(uint32_t appId, AppOwnershipInfo_t* info);
+	void getAppStateInfo(uint32_t appId, AppStateInfo_t* info);
 	void getSubscribedApps(uint32_t* appList, uint32_t size, uint32_t& count);
 	void parseProductInfoFromResponse(CMsgClientPICSProductInfoResponse* msg);
 	void runIPCFrame();

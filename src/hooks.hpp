@@ -7,13 +7,14 @@
 #include <string>
 
 class CAPIJob;
-class AppOwnershipInfo_t;
 class CClientUnifiedServiceTransport;
 class CProtoBufMsgBase;
 
 template<typename T>
 class CUtlVector;
 
+struct AppOwnershipInfo_t;
+struct AppStateInfo_t;
 struct DepotInfo_t;
 struct gameserverdetails_t;
 
@@ -107,6 +108,7 @@ namespace Hooks
 	typedef bool(*CUserAppManager_BuildDepotDependency_t)(void*, uint32_t, void*, CUtlVector<DepotInfo_t>*, CUtlVector<DepotInfo_t>*, void*, uint32_t*, bool*);
 
 	typedef bool(*IClientAppManager_BCanRemotePlayTogether_t)(void*, uint32_t);
+	typedef bool(*IClientAppManager_GetAppStateInfo_t)(void*, uint32_t, AppStateInfo_t*);
 
 	typedef bool(*IClientUser_BLoggedOn_t)(void*);
 	typedef uint32_t(*IClientUser_BUpdateAppOwnershipTicket_t)(void*, uint32_t, bool);
@@ -147,6 +149,7 @@ namespace Hooks
 	extern DetourHook<CUserAppManager_BuildDepotDependency_t> CUserAppManager_BuildDepotDependency;
 
 	extern DetourHook<IClientAppManager_BCanRemotePlayTogether_t> IClientAppManager_BCanRemotePlayTogether;
+	extern DetourHook<IClientAppManager_GetAppStateInfo_t> IClientAppManager_GetAppStateInfo;
 
 	extern DetourHook<IClientUser_BLoggedOn_t> IClientUser_BLoggedOn;
 	extern DetourHook<IClientUser_BUpdateAppOwnershipTicket_t> IClientUser_BUpdateAppOwnershipTicket;

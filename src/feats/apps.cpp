@@ -108,6 +108,28 @@ bool Apps::checkAppOwnership(uint32_t appId, AppOwnershipInfo_t* pInfo)
 	return true;
 }
 
+void Apps::getAppStateInfo(uint32_t appId, AppStateInfo_t* info)
+{
+	if (!info)
+	{
+		return;
+	}
+
+	if (!Apps::shouldDisableUpdates(appId))
+	{
+		return;
+	}
+	
+	info->state &= ~APPSTATE_UPDATE_OPTIONAL;
+	info->state &= ~APPSTATE_UPDATE_PAUSED;
+	info->state &= ~APPSTATE_UPDATE_QUEUED;
+	info->state &= ~APPSTATE_UPDATE_REQUIRED;
+	info->state &= ~APPSTATE_UPDATE_RUNNING;
+	info->state &= ~APPSTATE_UPDATE_STARTED;
+
+	g_pLog->once("Cleared info->state for %u\n", appId);
+}
+
 void Apps::getSubscribedApps(uint32_t* appList, size_t size, uint32_t& count)
 {
 	//Valve calls this function twice, once with size of 0 then again

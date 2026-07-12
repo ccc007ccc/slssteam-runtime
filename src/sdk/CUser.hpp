@@ -4,8 +4,6 @@
 
 #include <cstdint>
 
-class AppOwnershipInfo_t;
-
 enum class ECallbackType : uint32_t
 {
 	LicensesUpdate_t = 0x7d,
