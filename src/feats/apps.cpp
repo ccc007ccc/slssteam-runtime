@@ -274,6 +274,11 @@ bool Apps::shouldDisableCDKey(uint32_t appId)
 
 bool Apps::shouldDisableUpdates(uint32_t appId)
 {
+	if (!g_config.disableUpdates.get())
+	{
+		return false;
+	}
+
 	//Using AdditionalApps here aswell so users can manually block updates
 	return g_config.isAddedAppId(appId) || !g_pSteamEngine->getUser(0)->isSubscribed(appId);
 }

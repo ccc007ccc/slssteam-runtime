@@ -89,6 +89,9 @@ API: no
 #Disable cloud saves for unlocked games. Set to "no" if using CloudRedirect or similar.
 DisableCloud: yes
 
+#Disable updates for AppIds on AdditionalApps. Also blocks workshop downloads, so disable before downloading any workshop items
+DisableUpdates: yes
+
 #Changes your account's E-Mail clientsided. Leave blank to disable
 FakeEmail: ""
 
