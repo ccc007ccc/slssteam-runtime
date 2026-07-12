@@ -412,7 +412,7 @@ static bool hkUserAppManager_BuildDepotDependency
 
 	for(int i = 0; i < depots->size; i++)
 	{
-		const auto depot = &depots->memory.memory[i];
+		const auto depot = &depots->memory.base[i];
 		g_pLog->debug("Depot %u for %u -> %llu\n", depot->depotId, depot->appId, depot->manifestId);
 
 		if (manifestOverrides.contains(depot->depotId))
@@ -423,7 +423,7 @@ static bool hkUserAppManager_BuildDepotDependency
 	}
 	for(int i = 0; i < sharedDepots->size; i++)
 	{
-		const auto depot = &sharedDepots->memory.memory[i];
+		const auto depot = &sharedDepots->memory.base[i];
 		g_pLog->debug("Shared Depot %u for %u -> %llu\n", depot->depotId, depot->appId, depot->manifestId);
 	}
 
