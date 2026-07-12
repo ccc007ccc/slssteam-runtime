@@ -49,6 +49,7 @@ public:
 	MTVariable<std::unordered_map<uint32_t, uint64_t>> appTokens;
 	MTVariable<std::unordered_set<uint32_t>> fakeOffline;
 	MTVariable<std::unordered_map<uint32_t, uint32_t>> fakeAppIds;
+	MTVariable<std::unordered_map<uint32_t, uint64_t>> manifestIds;
 	MTVariable<FakeGame_t> idleStatus;
 	MTVariable<std::unordered_map<uint32_t, std::string>> gameTitles;
 	MTVariable<std::unordered_map<uint32_t, uint32_t>> subscriptionTimestamps;

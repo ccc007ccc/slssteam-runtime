@@ -415,10 +415,18 @@ static bool hkUserAppManager_BuildDepotDependency
 
 	g_pLog->debug("Vec Alloc %i, Grow %i, Size %i\n", depots->memory.alloc, depots->memory.growSize, depots->size);
 
+	const auto manifestOverrides = g_config.manifestIds.get();
+
 	for(int i = 0; i < depots->size; i++)
 	{
 		const auto depot = &depots->memory.memory[i];
 		g_pLog->debug("Depot %u for %u -> %llu\n", depot->depotId, depot->appId, depot->manifestId);
+
+		if (manifestOverrides.contains(depot->depotId))
+		{
+			depot->manifestId = manifestOverrides.at(depot->depotId);
+			g_pLog->debug("Overrode with %llu\n", depot->manifestId);
+		}
 	}
 	for(int i = 0; i < sharedDepots->size; i++)
 	{

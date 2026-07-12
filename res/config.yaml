@@ -48,6 +48,9 @@ FakeOffline:
 #Keeps track of the proper AppIds via game launches, so please do not start multiple FakeAppId enabled games simultaneously
 FakeAppIds:
 
+#Override Depot manifest IDs to download old versions for owned games
+ManifestIds:
+
 #Custom ingame statuses. Set AppId to 0 to disable
 IdleStatus:
   AppId: 0

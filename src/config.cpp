@@ -190,6 +190,7 @@ bool CConfig::loadSettings(bool firstLoad)
 	fakeOffline = getList<uint32_t>(node, "FakeOffline");
 
 	fakeAppIds = getMap<uint32_t, uint32_t>(node, "FakeAppIds");
+	manifestIds = getMap<uint32_t, uint64_t>(node, "ManifestIds");
 	appTokens = getMap<uint32_t, uint64_t>(node, "AppTokens");
 	gameTitles = getMap<uint32_t, std::string>(node, "GameTitles");
 	subscriptionTimestamps = getMap<uint32_t, uint32_t>(node, "SubscriptionTimestamps");
