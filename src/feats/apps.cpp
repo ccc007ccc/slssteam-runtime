@@ -6,6 +6,7 @@
 #include "../sdk/CUser.hpp"
 #include "../sdk/EReleaseState.hpp"
 #include "../sdk/IClientApps.hpp"
+#include "../sdk/IClientAppManager.hpp"
 
 #include "../config.hpp"
 #include "../globals.hpp"
@@ -106,34 +107,6 @@ bool Apps::checkAppOwnership(uint32_t appId, CAppOwnershipInfo* pInfo)
 	unlockApp(appId, pInfo);
 
 	return true;
-}
-
-int32_t Apps::getConfigStoreInt(const char* pChName)
-{
-	const auto name = std::string(pChName);
-	if (!name.ends_with("DisableUpdatesUntil"))
-	{
-		return 0;
-	}
-
-	std::regex re("[0-9]+");
-	std::smatch match;
-
-	if (!std::regex_search(name, match, re))
-	{
-		g_pLog->debug("Failed to extract appId from %s!\n", pChName);
-		return 0;
-	}
-
-	uint32_t appId = std::stoul(match.str());
-	if (!shouldDisableUpdates(appId))
-	{
-		return 0;
-	}
-
-	g_pLog->once("Disabled updates for %u\n", appId);
-	//Choke for 20min
-	return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count() + 1200;
 }
 
 void Apps::getSubscribedApps(uint32_t* appList, size_t size, uint32_t& count)
@@ -275,6 +248,12 @@ bool Apps::shouldDisableCDKey(uint32_t appId)
 bool Apps::shouldDisableUpdates(uint32_t appId)
 {
 	if (!g_config.disableUpdates.get())
+	{
+		return false;
+	}
+
+	//Do not block downloads of uninstalled games. Only block updates
+	if (!(g_pClientAppManager->getAppInstallState(appId) & APPSTATE_FULLY_INSTALLED))
 	{
 		return false;
 	}

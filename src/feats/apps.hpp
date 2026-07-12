@@ -17,7 +17,6 @@ namespace Apps
 	bool unlockApp(uint32_t appId, CAppOwnershipInfo* info);
 
 	bool checkAppOwnership(uint32_t appId, CAppOwnershipInfo* info);
-	int32_t getConfigStoreInt(const char* pChName);
 	void getSubscribedApps(uint32_t* appList, uint32_t size, uint32_t& count);
 	void parseProductInfoFromResponse(CMsgClientPICSProductInfoResponse* msg);
 	void runIPCFrame();

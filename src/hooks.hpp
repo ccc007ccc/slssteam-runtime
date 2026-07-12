@@ -11,6 +11,10 @@ class CAppOwnershipInfo;
 class CClientUnifiedServiceTransport;
 class CProtoBufMsgBase;
 
+template<typename T>
+class CUtlVector;
+
+struct DepotInfo_t;
 struct gameserverdetails_t;
 
 struct Pattern_t;
@@ -86,8 +90,6 @@ namespace Hooks
 
 	typedef uint32_t(*CAppDataCache_BParseResponseFromMessage_t)(void*, CProtoBufMsgBase*);
 
-	typedef int32_t(*CConfigStore_GetInt_t)(void*, uint32_t, const char*, uint32_t*);
-
 	typedef uint32_t(*CClientUnifiedServiceMethod_SendAndRecvMsg_t)(CClientUnifiedServiceTransport*, const char*, void*, void*, void*);
 
 	typedef void(*CProtoBufMsgBase_InitFromPacket_t)(CProtoBufMsgBase*, void*);
@@ -101,6 +103,8 @@ namespace Hooks
 
 	typedef uint32_t(*CUser_CheckAppOwnership_t)(void*, uint32_t, CAppOwnershipInfo*);
 	typedef uint32_t(*CUser_GetSubscribedApps_t)(void*, uint32_t*, uint32_t, uint8_t);
+
+	typedef bool(*CUserAppManager_BuildDepotDependency_t)(void*, uint32_t, void*, CUtlVector<DepotInfo_t>*, CUtlVector<DepotInfo_t>*, void*, uint32_t*, bool*);
 
 	typedef bool(*IClientAppManager_BCanRemotePlayTogether_t)(void*, uint32_t);
 
@@ -126,8 +130,6 @@ namespace Hooks
 
 	extern DetourHook<CAppDataCache_BParseResponseFromMessage_t> CAppDataCache_BParseResponseFromMessage;
 
-	extern DetourHook<CConfigStore_GetInt_t> CConfigStore_GetInt;
-
 	extern DetourHook<CClientUnifiedServiceMethod_SendAndRecvMsg_t> CClientUnifiedServiceMethod_SendAndRecvMsg;
 
 	extern DetourHook<CProtoBufMsgBase_InitFromPacket_t> CProtoBufMsgBase_InitFromPacket;
@@ -141,6 +143,8 @@ namespace Hooks
 
 	extern DetourHook<CUser_CheckAppOwnership_t> CUser_CheckAppOwnership;
 	extern DetourHook<CUser_GetSubscribedApps_t> CUser_GetSubscribedApps;
+
+	extern DetourHook<CUserAppManager_BuildDepotDependency_t> CUserAppManager_BuildDepotDependency;
 
 	extern DetourHook<IClientAppManager_BCanRemotePlayTogether_t> IClientAppManager_BCanRemotePlayTogether;
 

@@ -15,6 +15,7 @@
 #include "sdk/CSteamEngine.hpp"
 #include "sdk/CSteamMatchmakingServers.hpp"
 #include "sdk/CUser.hpp"
+#include "sdk/CUtl.hpp"
 #include "sdk/EResult.hpp"
 #include "sdk/IClientAppManager.hpp"
 #include "sdk/IClientApps.hpp"
@@ -212,30 +213,6 @@ static uint32_t hkAppDataCache_BParseResponseFromMessage(void* pAppDataCache, CP
 	return ret;
 }
 
-static int32_t hkConfigStore_GetInt(void* configStore, uint32_t storeEnum, const char* name, uint32_t* out)
-{
-	int32_t ret = Apps::getConfigStoreInt(name);
-
-	if (ret == 0)
-	{
-		ret = Hooks::CConfigStore_GetInt.tramp.fn(configStore, storeEnum, name, out);
-	}
-
-	g_pLog->debug
-	(
-		"%s(%p, %u, %s, %p) -> %i\n",
-
-		Hooks::CConfigStore_GetInt.name.c_str(),
-		configStore,
-		storeEnum,
-		name,
-		out,
-		ret
-  );
-
-	return ret;
-}
-
 static uint32_t hkClientUnifiedServiceTransport_SendAndRecvMsg(CClientUnifiedServiceTransport* pUnifiedServiceTransport, const char* name, void* send, void* recv, void* arg4)
 {
 	uint32_t ret = Achievements::sendAndRecvGetPlayerStats
@@ -413,6 +390,45 @@ static uint32_t hkUser_GetSubscribedApps(void* pClientUser, uint32_t* pAppList, 
 
 	return count;
 }
+
+static bool hkUserAppManager_BuildDepotDependency
+(
+	void* a0,
+	uint32_t appId,
+	void* a2,
+	CUtlVector<DepotInfo_t>* depots,
+	CUtlVector<DepotInfo_t>* sharedDepots,
+	void* a5,
+	uint32_t* pBuildId,
+	bool* a6
+)
+{
+	if (Apps::shouldDisableUpdates(appId))
+	{
+		g_pLog->once("Disabled updates for %u\n", appId);
+		return 0;
+	}
+
+	const bool success = Hooks::CUserAppManager_BuildDepotDependency.tramp.fn(a0, appId, a2, depots, sharedDepots, a5, pBuildId, a6);
+
+	g_pLog->debug("%s(%p, %u) -> %i\n", Hooks::CUserAppManager_BuildDepotDependency.name.c_str(), a0, appId, success);
+
+	g_pLog->debug("Vec Alloc %i, Grow %i, Size %i\n", depots->memory.alloc, depots->memory.growSize, depots->size);
+
+	for(int i = 0; i < depots->size; i++)
+	{
+		const auto depot = &depots->memory.memory[i];
+		g_pLog->debug("Depot %u for %u -> %llu\n", depot->depotId, depot->appId, depot->manifestId);
+	}
+	for(int i = 0; i < sharedDepots->size; i++)
+	{
+		const auto depot = &sharedDepots->memory.memory[i];
+		g_pLog->debug("Shared Depot %u for %u -> %llu\n", depot->depotId, depot->appId, depot->manifestId);
+	}
+
+	return success;
+}
+
 
 static bool hkClientAppManager_BCanRemotePlayTogether(void* pClientAppManager, uint32_t appId)
 {
@@ -1015,8 +1031,6 @@ namespace Hooks
 
 	DetourHook<CAppDataCache_BParseResponseFromMessage_t> CAppDataCache_BParseResponseFromMessage;
 
-	DetourHook<CConfigStore_GetInt_t> CConfigStore_GetInt;
-
 	DetourHook<CClientUnifiedServiceMethod_SendAndRecvMsg_t> CClientUnifiedServiceMethod_SendAndRecvMsg;
 
 	DetourHook<CProtoBufMsgBase_InitFromPacket_t> CProtoBufMsgBase_InitFromPacket;
@@ -1030,6 +1044,8 @@ namespace Hooks
 
 	DetourHook<CUser_CheckAppOwnership_t> CUser_CheckAppOwnership;
 	DetourHook<CUser_GetSubscribedApps_t> CUser_GetSubscribedApps;
+
+	DetourHook<CUserAppManager_BuildDepotDependency_t> CUserAppManager_BuildDepotDependency;
 
 	DetourHook<IClientAppManager_BCanRemotePlayTogether_t> IClientAppManager_BCanRemotePlayTogether;
 
@@ -1080,7 +1096,6 @@ bool Hooks::setup()
 		&& CAPIJob_SendAndRecv.setup(Patterns::CAPIJob::SendAndRecv, &hkAPIJob_SendAndRecv)
 
 		&& CAppDataCache_BParseResponseFromMessage.setup(Patterns::CAppDataCache::BParseResponseMessage, &hkAppDataCache_BParseResponseFromMessage)
-		&& CConfigStore_GetInt.setup(Patterns::CClientConfigStore::GetInt, &hkConfigStore_GetInt)
 
 		&& CClientUnifiedServiceMethod_SendAndRecvMsg.setup(Patterns::CClientUnifiedServiceTransport::SendAndRecvMsg, &hkClientUnifiedServiceTransport_SendAndRecvMsg)
 
@@ -1092,6 +1107,8 @@ bool Hooks::setup()
 
 		&& CUser_CheckAppOwnership.setup(Patterns::CUser::CheckAppOwnership, &hkUser_CheckAppOwnership)
 		&& CUser_GetSubscribedApps.setup(Patterns::CUser::GetSubscribedApps, &hkUser_GetSubscribedApps)
+
+		&& CUserAppManager_BuildDepotDependency.setup(Patterns::CUserAppManager::BuildDepotDependency, hkUserAppManager_BuildDepotDependency)
 
 		&& CSteamEngine_Init.setup(Patterns::CSteamEngine::Init, &hkSteamEngine_Init)
 		&& CSteamEngine_SetAppIdForCurrentPipe.setup(Patterns::CSteamEngine::SetAppIdForCurrentPipe, &hkSteamEngine_SetAppIdForCurrentPipe)
@@ -1136,8 +1153,6 @@ void Hooks::place()
 
 	CClientUnifiedServiceMethod_SendAndRecvMsg.place();
 
-	CConfigStore_GetInt.place();
-
 	CProtoBufMsgBase_InitFromPacket.place();
 	CProtoBufMsgBase_Send.place();
 
@@ -1149,6 +1164,8 @@ void Hooks::place()
 
 	CUser_CheckAppOwnership.place();
 	CUser_GetSubscribedApps.place();
+
+	CUserAppManager_BuildDepotDependency.place();
 
 	IClientAppManager_BCanRemotePlayTogether.place();
 
@@ -1182,8 +1199,6 @@ void Hooks::remove()
 
 	CClientUnifiedServiceMethod_SendAndRecvMsg.remove();
 
-	CConfigStore_GetInt.remove();
-
 	CProtoBufMsgBase_InitFromPacket.remove();
 	CProtoBufMsgBase_Send.remove();
 
@@ -1195,6 +1210,8 @@ void Hooks::remove()
 
 	CUser_CheckAppOwnership.remove();
 	CUser_GetSubscribedApps.remove();
+
+	CUserAppManager_BuildDepotDependency.place();
 
 	IClientAppManager_BCanRemotePlayTogether.remove();
 

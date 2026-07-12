@@ -92,16 +92,6 @@ namespace Patterns
 		};
 	}
 
-	namespace CClientConfigStore
-	{
-		Pattern_t GetInt
-		{
-			"CClientConfigStore::GetInt",
-			"E8 ? ? ? ? 89 C7 8B 85 DC FD FF FF",
-			SigFollowMode::Relative
-		};
-	}
-
 	namespace CProtoBufMsgBase
 	{
 		Pattern_t InitFromPacket
@@ -192,6 +182,16 @@ namespace Patterns
 		{
 			"IClientUser::UpdateAppOwnershipTicket",
 			"E8 ? ? ? ? E9 ? ? ? ? ? ? ? ? ? ? 8D 45 ? 89 45 ? EB",
+			SigFollowMode::Relative
+		};
+	}
+
+	namespace CUserAppManager
+	{
+		Pattern_t BuildDepotDependency
+		{
+			"CUserAppManager::BuildDepotDependency",
+			"E8 ? ? ? ? 88 45 A3 83 C4 ? 84 C0 74 ?",
 			SigFollowMode::Relative
 		};
 	}
