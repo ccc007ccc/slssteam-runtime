@@ -1,6 +1,5 @@
 #include "apps.hpp"
 
-#include "../sdk/CAppOwnershipInfo.hpp"
 #include "../sdk/CProtoBufMsgBase.hpp"
 #include "../sdk/CSteamEngine.hpp"
 #include "../sdk/CUser.hpp"
@@ -24,7 +23,7 @@
 
 bool Apps::applistRequested;
 
-bool Apps::unlockApp(uint32_t appId, CAppOwnershipInfo* info, uint32_t ownerId)
+bool Apps::unlockApp(uint32_t appId, AppOwnershipInfo_t* info, uint32_t ownerId)
 {
 	//Changing the purchased field is enough, but just for nicety in the Steamclient UI we change the owner too
 	info->owner = ownerId;
@@ -53,12 +52,12 @@ bool Apps::unlockApp(uint32_t appId, CAppOwnershipInfo* info, uint32_t ownerId)
 	return true;
 }
 
-bool Apps::unlockApp(uint32_t appId, CAppOwnershipInfo* info)
+bool Apps::unlockApp(uint32_t appId, AppOwnershipInfo_t* info)
 {
 	return unlockApp(appId, info, g_currentSteamId);
 }
 
-bool Apps::checkAppOwnership(uint32_t appId, CAppOwnershipInfo* pInfo)
+bool Apps::checkAppOwnership(uint32_t appId, AppOwnershipInfo_t* pInfo)
 {
 	//Wait Until GetSubscribedApps gets called once to let Steam request and populate legit data first.
 	//Afterwards modifying should hopefully not affect false positives anymore

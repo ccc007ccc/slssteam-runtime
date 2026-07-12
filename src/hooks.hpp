@@ -7,7 +7,7 @@
 #include <string>
 
 class CAPIJob;
-class CAppOwnershipInfo;
+class AppOwnershipInfo_t;
 class CClientUnifiedServiceTransport;
 class CProtoBufMsgBase;
 
@@ -101,7 +101,7 @@ namespace Hooks
 	typedef gameserverdetails_t*(*CSteamMatchmakingServers_GetServerDetails_t)(void*, uint32_t, uint32_t);
 	typedef uint32_t(*CSteamMatchmakingServers_RequestInternetServerList_t)(void*, uint32_t, uint32_t, uint32_t, uint32_t);
 
-	typedef uint32_t(*CUser_CheckAppOwnership_t)(void*, uint32_t, CAppOwnershipInfo*);
+	typedef uint32_t(*CUser_CheckAppOwnership_t)(void*, uint32_t, AppOwnershipInfo_t*);
 	typedef uint32_t(*CUser_GetSubscribedApps_t)(void*, uint32_t*, uint32_t, uint8_t);
 
 	typedef bool(*CUserAppManager_BuildDepotDependency_t)(void*, uint32_t, void*, CUtlVector<DepotInfo_t>*, CUtlVector<DepotInfo_t>*, void*, uint32_t*, bool*);

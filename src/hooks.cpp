@@ -9,7 +9,6 @@
 #include "vftableinfo.hpp"
 
 #include "sdk/CAPIJob.hpp"
-#include "sdk/CAppOwnershipInfo.hpp"
 #include "sdk/CClientUnifiedServiceTransport.hpp"
 #include "sdk/CProtoBufMsgBase.hpp"
 #include "sdk/CSteamEngine.hpp"
@@ -347,7 +346,7 @@ static uint32_t hkSteamMatchmakingServers_RequestInternetServerList(void* pSteam
 }
 
 __attribute__((hot))
-static uint32_t hkUser_CheckAppOwnership(void* pClientUser, uint32_t appId, CAppOwnershipInfo* pOwnershipInfo)
+static uint32_t hkUser_CheckAppOwnership(void* pClientUser, uint32_t appId, AppOwnershipInfo_t* pOwnershipInfo)
 {
 	const uint32_t ret = Hooks::CUser_CheckAppOwnership.tramp.fn(pClientUser, appId, pOwnershipInfo);
 

@@ -1,6 +1,5 @@
 #include "dlc.hpp"
 
-#include "../sdk/CAppOwnershipInfo.hpp"
 #include "../sdk/CSteamEngine.hpp"
 #include "../sdk/CUser.hpp"
 
@@ -33,7 +32,7 @@ bool DLC::shouldUnlockDlc(uint32_t appId)
 	return true;
 }
 
-bool DLC::checkAppOwnership(uint32_t appId, CAppOwnershipInfo *info)
+bool DLC::checkAppOwnership(uint32_t appId, AppOwnershipInfo_t *info)
 {
 	if (!shouldUnlockDlc(appId))
 	{
