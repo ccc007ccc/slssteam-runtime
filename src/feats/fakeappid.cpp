@@ -159,9 +159,7 @@ void FakeAppIds::sendMsg(CProtoBufMsgBase* msg)
 		const auto game = body->mutable_games_played(i);
 		const uint64_t gameId = game->game_id();
 
-		// Native non-Steam shortcut IDs use 0x02000000 in their low 32 bits.
-		// Preserve the original 64-bit shortcut ID instead of applying a fake AppID.
-		if ((gameId & 0xffffffffULL) == 0x02000000ULL)
+		if (gameId & 0x2000000ULL)
 		{
 			continue;
 		}

@@ -269,7 +269,6 @@ void Apps::sendGamesPlayed(CMsgClientGamesPlayed* msg)
 	for(int i = 0; i < msg->games_played_size(); i++)
 	{
 		auto game = CMsgClientGamesPlayed_GamePlayed(msg->games_played(i));
-
 		if (!game.game_id())
 		{
 			continue;
@@ -277,9 +276,9 @@ void Apps::sendGamesPlayed(CMsgClientGamesPlayed* msg)
 
 		const uint64_t gameId = game.game_id();
 
-		// Native non-Steam shortcut IDs use 0x02000000 in their low 32 bits.
+		// Native non-Steam shortcut IDs use 0x2000000 in their low 32 bits.
 		// Leave the original shortcut title and 64-bit ID untouched.
-		if ((gameId & 0xffffffffULL) == 0x02000000ULL)
+		if (gameId & 0x2000000ULL)
 		{
 			g_pLog->debug("Preserving non-Steam shortcut %llu\n", gameId);
 			continue;
