@@ -43,6 +43,11 @@ namespace Patterns
 		extern Pattern_t BParseResponseMessage;
 	}
 
+	namespace CClientConfigStore
+	{
+		extern Pattern_t GetInt;
+	}
+
 	namespace CProtoBufMsgBase
 	{
 		extern Pattern_t InitFromPacket;
@@ -81,7 +86,6 @@ namespace Patterns
 	{
 		extern Pattern_t RunIPCFrame;
 		extern Pattern_t BCanRemotePlayTogether;
-		extern Pattern_t GetAppStateInfo;
 	}
 
 	namespace IClientApps

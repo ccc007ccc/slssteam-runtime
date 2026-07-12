@@ -92,6 +92,16 @@ namespace Patterns
 		};
 	}
 
+	namespace CClientConfigStore
+	{
+		Pattern_t GetInt
+		{
+			"CClientConfigStore::GetInt",
+			"E8 ? ? ? ? 89 C7 8B 85 DC FD FF FF",
+			SigFollowMode::Relative
+		};
+	}
+
 	namespace CProtoBufMsgBase
 	{
 		Pattern_t InitFromPacket
@@ -201,12 +211,6 @@ namespace Patterns
 			"58 5A FF 74 24 ? 56 E8 ? ? ? ? 83 C4 10 85 C0 74",
 			SigFollowMode::PrologueUpwards,
 			std::vector<uint8_t> { 0xe8, 0x53, 0x56, 0x57 }
-		};
-		Pattern_t GetAppStateInfo
-		{
-			"IClientAppManager::GetAppStateInfo",
-			"E8 ? ? ? ? 83 C4 ? 89 C3 84 C0 74 ? 8B 44 24 04",
-			SigFollowMode::Relative
 		};
 	}
 

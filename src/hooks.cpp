@@ -212,6 +212,30 @@ static uint32_t hkAppDataCache_BParseResponseFromMessage(void* pAppDataCache, CP
 	return ret;
 }
 
+static int32_t hkConfigStore_GetInt(void* configStore, uint32_t storeEnum, const char* name, uint32_t* out)
+{
+	int32_t ret = Apps::getConfigStoreInt(name);
+
+	if (ret == 0)
+	{
+		ret = Hooks::CConfigStore_GetInt.tramp.fn(configStore, storeEnum, name, out);
+	}
+
+	g_pLog->debug
+	(
+		"%s(%p, %u, %s, %p) -> %i\n",
+
+		Hooks::CConfigStore_GetInt.name.c_str(),
+		configStore,
+		storeEnum,
+		name,
+		out,
+		ret
+  );
+
+	return ret;
+}
+
 static uint32_t hkClientUnifiedServiceTransport_SendAndRecvMsg(CClientUnifiedServiceTransport* pUnifiedServiceTransport, const char* name, void* send, void* recv, void* arg4)
 {
 	uint32_t ret = Achievements::sendAndRecvGetPlayerStats
@@ -403,25 +427,6 @@ static bool hkClientAppManager_BCanRemotePlayTogether(void* pClientAppManager, u
 	);
 
 	return true;
-}
-
-static bool hkClientAppManager_GetAppStateInfo(void* pClientAppManager, uint32_t appId, AppStateInfo_t* info)
-{
-	const bool ret = Hooks::IClientAppManager_GetAppStateInfo.tramp.fn(pClientAppManager, appId, info);
-	g_pLog->debug
-	(
-		"%s(%p, %u, %p) -> %i\n",
-
-		Hooks::IClientAppManager_GetAppStateInfo.name.c_str(),
-		pClientAppManager,
-		appId,
-		info,
-		ret
-	);
-
-	Apps::getAppStateInfo(appId, info);
-
-	return ret;
 }
 
 static void* hkClientAppManager_LaunchApp(void* pClientAppManager, uint32_t* pAppId, void* a2, void* a3, void* a4)
@@ -1010,6 +1015,8 @@ namespace Hooks
 
 	DetourHook<CAppDataCache_BParseResponseFromMessage_t> CAppDataCache_BParseResponseFromMessage;
 
+	DetourHook<CConfigStore_GetInt_t> CConfigStore_GetInt;
+
 	DetourHook<CClientUnifiedServiceMethod_SendAndRecvMsg_t> CClientUnifiedServiceMethod_SendAndRecvMsg;
 
 	DetourHook<CProtoBufMsgBase_InitFromPacket_t> CProtoBufMsgBase_InitFromPacket;
@@ -1025,7 +1032,6 @@ namespace Hooks
 	DetourHook<CUser_GetSubscribedApps_t> CUser_GetSubscribedApps;
 
 	DetourHook<IClientAppManager_BCanRemotePlayTogether_t> IClientAppManager_BCanRemotePlayTogether;
-	DetourHook<IClientAppManager_GetAppStateInfo_t> IClientAppManager_GetAppStateInfo;
 
 	DetourHook<IClientUser_BLoggedOn_t> IClientUser_BLoggedOn;
 	DetourHook<IClientUser_BUpdateAppOwnershipTicket_t> IClientUser_BUpdateAppOwnershipTicket;
@@ -1074,6 +1080,7 @@ bool Hooks::setup()
 		&& CAPIJob_SendAndRecv.setup(Patterns::CAPIJob::SendAndRecv, &hkAPIJob_SendAndRecv)
 
 		&& CAppDataCache_BParseResponseFromMessage.setup(Patterns::CAppDataCache::BParseResponseMessage, &hkAppDataCache_BParseResponseFromMessage)
+		&& CConfigStore_GetInt.setup(Patterns::CClientConfigStore::GetInt, &hkConfigStore_GetInt)
 
 		&& CClientUnifiedServiceMethod_SendAndRecvMsg.setup(Patterns::CClientUnifiedServiceTransport::SendAndRecvMsg, &hkClientUnifiedServiceTransport_SendAndRecvMsg)
 
@@ -1090,7 +1097,6 @@ bool Hooks::setup()
 		&& CSteamEngine_SetAppIdForCurrentPipe.setup(Patterns::CSteamEngine::SetAppIdForCurrentPipe, &hkSteamEngine_SetAppIdForCurrentPipe)
 
 		&& IClientAppManager_BCanRemotePlayTogether.setup(Patterns::IClientAppManager::BCanRemotePlayTogether, hkClientAppManager_BCanRemotePlayTogether)
-		&& IClientAppManager_GetAppStateInfo.setup(Patterns::IClientAppManager::GetAppStateInfo, hkClientAppManager_GetAppStateInfo)
 
 		&& IClientUser_BLoggedOn.setup(Patterns::IClientUser::BLoggedOn, &hkClientUser_BLoggedOn)
 		&& IClientUser_BUpdateAppOwnershipTicket.setup(Patterns::IClientUser::BUpdateAppOwnershipTicket, hkClientUser_BUpdateOwnershipTicket)
@@ -1130,6 +1136,8 @@ void Hooks::place()
 
 	CClientUnifiedServiceMethod_SendAndRecvMsg.place();
 
+	CConfigStore_GetInt.place();
+
 	CProtoBufMsgBase_InitFromPacket.place();
 	CProtoBufMsgBase_Send.place();
 
@@ -1143,7 +1151,6 @@ void Hooks::place()
 	CUser_GetSubscribedApps.place();
 
 	IClientAppManager_BCanRemotePlayTogether.place();
-	IClientAppManager_GetAppStateInfo.place();
 
 	IClientUser_BLoggedOn.place();
 	IClientUser_BUpdateAppOwnershipTicket.place();
@@ -1173,6 +1180,10 @@ void Hooks::remove()
 
 	CAppDataCache_BParseResponseFromMessage.place();
 
+	CClientUnifiedServiceMethod_SendAndRecvMsg.remove();
+
+	CConfigStore_GetInt.remove();
+
 	CProtoBufMsgBase_InitFromPacket.remove();
 	CProtoBufMsgBase_Send.remove();
 
@@ -1182,13 +1193,10 @@ void Hooks::remove()
 	CSteamMatchmakingServers_GetServerDetails.remove();
 	CSteamMatchmakingServers_RequestInternetServerList.remove();
 
-	CClientUnifiedServiceMethod_SendAndRecvMsg.remove();
-
 	CUser_CheckAppOwnership.remove();
 	CUser_GetSubscribedApps.remove();
 
 	IClientAppManager_BCanRemotePlayTogether.remove();
-	IClientAppManager_GetAppStateInfo.remove();
 
 	IClientUser_BLoggedOn.remove();
 	IClientUser_BUpdateAppOwnershipTicket.remove();

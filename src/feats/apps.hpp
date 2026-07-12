@@ -9,8 +9,6 @@ class CMsgClientGamesPlayed;
 class CMsgClientPICSProductInfoRequest;
 class CMsgClientPICSProductInfoResponse;
 
-struct AppStateInfo_t;
-
 namespace Apps
 {
 	extern bool applistRequested;
@@ -19,8 +17,8 @@ namespace Apps
 	bool unlockApp(uint32_t appId, CAppOwnershipInfo* info);
 
 	bool checkAppOwnership(uint32_t appId, CAppOwnershipInfo* info);
+	int32_t getConfigStoreInt(const char* pChName);
 	void getSubscribedApps(uint32_t* appList, uint32_t size, uint32_t& count);
-	void getAppStateInfo(uint32_t appId, AppStateInfo_t* info);
 	void parseProductInfoFromResponse(CMsgClientPICSProductInfoResponse* msg);
 	void runIPCFrame();
 
