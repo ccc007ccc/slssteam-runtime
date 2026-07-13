@@ -12,6 +12,11 @@ CUser* CSteamEngine::getUser(uint32_t index)
 {
 	const static auto offset = *reinterpret_cast<lm_address_t*>(Patterns::CSteamEngine::Offset_User.address + 0x2);
 	const auto vec = reinterpret_cast<const CUtlVector<CUser*>*>(this + offset);
+	if (index >= vec->size)
+	{
+		return nullptr;
+	}
+
 	return *(&vec->memory.base[index * 2] + 1);
 
 	//const auto ppUserMap = *reinterpret_cast<uint8_t**>(this + offset);
