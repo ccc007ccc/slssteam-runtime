@@ -212,12 +212,6 @@ namespace Patterns
 			SigFollowMode::PrologueUpwards,
 			std::vector<uint8_t> { 0xe8, 0x53, 0x56, 0x57 }
 		};
-		Pattern_t GetAppStateInfo
-		{
-			"IClientAppManager::GetAppStateInfo",
-			"E8 ? ? ? ? 83 C4 ? 89 C3 84 C0 74 ? 8B 44 24 04",
-			SigFollowMode::Relative
-		};
 	}
 
 	namespace IClientApps

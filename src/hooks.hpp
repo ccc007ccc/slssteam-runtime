@@ -14,7 +14,6 @@ template<typename T>
 class CUtlVector;
 
 struct AppOwnershipInfo_t;
-struct AppStateInfo_t;
 struct DepotInfo_t;
 struct gameserverdetails_t;
 
@@ -108,7 +107,6 @@ namespace Hooks
 	typedef bool(*CUserAppManager_BuildDepotDependency_t)(void*, uint32_t, void*, CUtlVector<DepotInfo_t>*, CUtlVector<DepotInfo_t>*, void*, uint32_t*, bool*);
 
 	typedef bool(*IClientAppManager_BCanRemotePlayTogether_t)(void*, uint32_t);
-	typedef bool(*IClientAppManager_GetAppStateInfo_t)(void*, uint32_t, AppStateInfo_t*);
 
 	typedef bool(*IClientUser_BLoggedOn_t)(void*);
 	typedef uint32_t(*IClientUser_BUpdateAppOwnershipTicket_t)(void*, uint32_t, bool);
@@ -149,7 +147,6 @@ namespace Hooks
 	extern DetourHook<CUserAppManager_BuildDepotDependency_t> CUserAppManager_BuildDepotDependency;
 
 	extern DetourHook<IClientAppManager_BCanRemotePlayTogether_t> IClientAppManager_BCanRemotePlayTogether;
-	extern DetourHook<IClientAppManager_GetAppStateInfo_t> IClientAppManager_GetAppStateInfo;
 
 	extern DetourHook<IClientUser_BLoggedOn_t> IClientUser_BLoggedOn;
 	extern DetourHook<IClientUser_BUpdateAppOwnershipTicket_t> IClientUser_BUpdateAppOwnershipTicket;
@@ -158,6 +155,7 @@ namespace Hooks
 	extern DetourHook<IClientUser_RequiresLegacyCDKey_t> IClientUser_RequiresLegacyCDKey;
 
 	typedef bool(*IClientAppManager_BIsDlcEnabled_t)(void*, uint32_t, uint32_t, void*);
+	typedef bool(*IClientAppManager_GetAppUpdateInfo_t)(void*, uint32_t, uint32_t*);
 	typedef void*(*IClientAppManager_LaunchApp_t)(void*, uint32_t*, void*, void*, void*);
 	typedef bool(*IClientAppManager_IsAppDlcInstalled_t)(void*, uint32_t, uint32_t);
 
@@ -170,6 +168,7 @@ namespace Hooks
 	typedef uint32_t(*IClientUtils_GetAppId_t)(void*);
 
 	extern VFTHook<IClientAppManager_BIsDlcEnabled_t> IClientAppManager_BIsDlcEnabled;
+    extern VFTHook<IClientAppManager_GetAppUpdateInfo_t> IClientAppManager_GetAppUpdateInfo;
 	extern VFTHook<IClientAppManager_LaunchApp_t> IClientAppManager_LaunchApp;
 	extern VFTHook<IClientAppManager_IsAppDlcInstalled_t> IClientAppManager_IsAppDlcInstalled;
 
