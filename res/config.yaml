@@ -27,10 +27,14 @@ DisableFamilyShareLock: yes
 #Switches to whitelist instead of the default blacklist
 UseWhitelist: no
 
-#List of AppIds to ex-/include
+#List of AppIds to ex-/include. Either specify each DLC you want to in-/exclude individually
+#or add the DLC's parent AppId (the Game's one) to allow unlocking all of their child AppIds
 AppIds:
 
-#Additional AppIds to inject (Overrides your black-/whitelist & also overrides OwnerIds for apps you got shared!) Best to use this only on games NOT in your library.
+#Additional AppIds to inject (Overrides OwnerIds for apps you got shared! This breaks downloads)
+#Best to use this only on games NOT in your library.
+#AppIds on this list will automatically get added to your AppIds setting aswell, but only for the initial check.
+#It will get ignored in exclusion checks for the parent AppId
 AdditionalApps:
 
 #Extra Data for Dlcs belonging to a specific AppId. Only needed
@@ -48,7 +52,8 @@ FakeOffline:
 #Keeps track of the proper AppIds via game launches, so please do not start multiple FakeAppId enabled games simultaneously
 FakeAppIds:
 
-#Override Depot manifest IDs to download old versions for owned games
+#Override Depot manifest IDs
+#Use this to download older game versions or to lock a game to a specific version
 ManifestIds:
 
 #Custom ingame statuses. Set AppId to 0 to disable
@@ -92,7 +97,9 @@ API: no
 #Disable cloud saves for unlocked games. Set to "no" if using CloudRedirect or similar.
 DisableCloud: yes
 
-#Disable updates for AppIds on AdditionalApps. Also blocks workshop downloads, so disable before downloading any workshop items
+#Disable updates for AppIds on AdditionalApps
+#Only works for unowned games, since those do not get any depots from CUserAppManager::BuildDepotDependency.
+#For owned games use ManifestIds
 DisableUpdates: yes
 
 #Changes your account's E-Mail clientsided. Leave blank to disable
