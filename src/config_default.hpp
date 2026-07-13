@@ -97,7 +97,7 @@ API: no
 #Disable cloud saves for unlocked games. Set to "no" if using CloudRedirect or similar.
 DisableCloud: yes
 
-#Disable updates for AppIds on AdditionalApps by clearing their StateFlags.
+#Disable updates for AppIds on AdditionalApps
 #Only works for unowned games, since those do not get any depots from CUserAppManager::BuildDepotDependency.
 #For owned games use ManifestIds
 DisableUpdates: yes

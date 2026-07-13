@@ -5,20 +5,16 @@
 #include "../sdk/CUser.hpp"
 #include "../sdk/EReleaseState.hpp"
 #include "../sdk/IClientApps.hpp"
-#include "../sdk/IClientAppManager.hpp"
 
 #include "../config.hpp"
 #include "../globals.hpp"
 
 #include "fakeappid.hpp"
 
-#include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <mutex>
-#include <regex>
 #include <sstream>
-#include <string>
 
 
 bool Apps::applistRequested;
@@ -255,6 +251,27 @@ bool Apps::shouldDisableUpdates(uint32_t appId)
 	return g_config.isAddedAppId(appId) || !g_pSteamEngine->getUser(0)->isSubscribed(appId);
 }
 
+void Apps::sendAndRecvLastPlayedTimes(const char* name, CPlayer_GetLastPlayedTimes_Response* recv)
+{
+	if (strcmp(name, "Player.ClientGetLastPlayedTimes#1") != 0)
+	{
+		return;
+	}
+
+	const auto apps = g_config.addedAppIds.get();
+	for (int i = recv->games_size() - 1; i >= 0; i--)
+	{
+		auto game = recv->mutable_games(i);
+		if (!apps.contains(game->appid()))
+		{
+			continue;
+		}
+
+		g_pLog->debug("Removed serverside PlayTime for %u\n", game->appid());
+		recv->mutable_games()->DeleteSubrange(i, 1);
+	}
+}
+
 void Apps::sendGamesPlayed(CMsgClientGamesPlayed* msg)
 {
 	auto titles = g_config.gameTitles.get();
@@ -341,44 +358,6 @@ void Apps::sendPICSInfoRequest(CMsgClientPICSProductInfoRequest* msg)
 			app->set_access_token(tokens.at(app->appid()));
 			g_pLog->debug("Used access token from config for %u\n", app->appid());
 		}
-	}
-}
-
-void Apps::filterLastPlayedTimes(const char* name, void* recv)
-{
-	if (!recv || !name)
-	{
-		return;
-	}
-
-	if (strcmp(name, "Player.ClientGetLastPlayedTimes#1") != 0)
-	{
-		return;
-	}
-
-	auto* response = static_cast<CPlayer_GetLastPlayedTimes_Response*>(recv);
-	if (!response->games_size())
-	{
-		return;
-	}
-
-	auto addedIds = g_config.addedAppIds.get();
-	bool filtered = false;
-
-	for (int i = response->games_size() - 1; i >= 0; i--)
-	{
-		const uint32_t appId = static_cast<uint32_t>(response->games(i).appid());
-		if (addedIds.contains(appId))
-		{
-			g_pLog->debug("Filtered playtime for AdditionalApp %u\n", appId);
-			response->mutable_games()->DeleteSubrange(i, 1);
-			filtered = true;
-		}
-	}
-
-	if (filtered)
-	{
-		g_pLog->info("Filtered playtime response for AdditionalApp(s)\n");
 	}
 }
 
