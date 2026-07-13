@@ -344,6 +344,44 @@ void Apps::sendPICSInfoRequest(CMsgClientPICSProductInfoRequest* msg)
 	}
 }
 
+void Apps::filterLastPlayedTimes(const char* name, void* recv)
+{
+	if (!recv || !name)
+	{
+		return;
+	}
+
+	if (strcmp(name, "Player.ClientGetLastPlayedTimes#1") != 0)
+	{
+		return;
+	}
+
+	auto* response = static_cast<CPlayer_GetLastPlayedTimes_Response*>(recv);
+	if (!response->games_size())
+	{
+		return;
+	}
+
+	auto addedIds = g_config.addedAppIds.get();
+	bool filtered = false;
+
+	for (int i = response->games_size() - 1; i >= 0; i--)
+	{
+		const uint32_t appId = static_cast<uint32_t>(response->games(i).appid());
+		if (addedIds.contains(appId))
+		{
+			g_pLog->debug("Filtered playtime for AdditionalApp %u\n", appId);
+			response->mutable_games()->DeleteSubrange(i, 1);
+			filtered = true;
+		}
+	}
+
+	if (filtered)
+	{
+		g_pLog->info("Filtered playtime response for AdditionalApp(s)\n");
+	}
+}
+
 void Apps::sendMsg(CProtoBufMsgBase *msg)
 {
 	switch(msg->type)

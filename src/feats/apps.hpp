@@ -28,6 +28,8 @@ namespace Apps
 	bool shouldDisableCDKey(uint32_t appId);
 	bool shouldDisableUpdates(uint32_t appId);
 
+	void filterLastPlayedTimes(const char* name, void* recv);
+
 	void sendGamesPlayed(CMsgClientGamesPlayed* msg);
 	void sendPICSInfoRequest(CMsgClientPICSProductInfoRequest* msg);
 	void sendMsg(CProtoBufMsgBase* msg);
