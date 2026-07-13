@@ -1216,7 +1216,7 @@ void Hooks::remove()
 
 	CAPIJob_SendAndRecv.remove();
 
-	CAppDataCache_BParseResponseFromMessage.place();
+	CAppDataCache_BParseResponseFromMessage.remove();
 
 	CClientUnifiedServiceMethod_SendAndRecvMsg.remove();
 
@@ -1232,7 +1232,7 @@ void Hooks::remove()
 	CUser_CheckAppOwnership.remove();
 	CUser_GetSubscribedApps.remove();
 
-	CUserAppManager_BuildDepotDependency.place();
+	CUserAppManager_BuildDepotDependency.remove();
 
 	IClientAppManager_BCanRemotePlayTogether.remove();
 
