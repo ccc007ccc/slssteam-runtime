@@ -408,13 +408,13 @@ static bool hkUserAppManager_BuildDepotDependency
 
 	g_pLog->debug("%s(%p, %u) -> %i\n", Hooks::CUserAppManager_BuildDepotDependency.name.c_str(), a0, appId, success);
 
-	g_pLog->debug("Vec Alloc %i, Grow %i, Size %i\n", depots->memory.alloc, depots->memory.growSize, depots->size);
+	g_pLog->debug("Vec Alloc %u, Grow %u, Size %u\n", depots->memory.alloc, depots->memory.growSize, depots->size);
 
 	const auto manifestOverrides = g_config.manifestIds.get();
 
-	for(int i = 0; i < depots->size; i++)
+	for(unsigned int i = 0; i < depots->size; i++)
 	{
-		const auto depot = &depots->memory.base[i];
+		const auto depot = depots->at(i);
 		g_pLog->debug("Depot %u for %u -> %llu\n", depot->depotId, depot->appId, depot->manifestId);
 
 		if (manifestOverrides.contains(depot->depotId))
@@ -423,9 +423,9 @@ static bool hkUserAppManager_BuildDepotDependency
 			g_pLog->debug("Overrode with %llu\n", depot->manifestId);
 		}
 	}
-	for(int i = 0; i < sharedDepots->size; i++)
+	for(unsigned int i = 0; i < sharedDepots->size; i++)
 	{
-		const auto depot = &sharedDepots->memory.base[i];
+		const auto depot = sharedDepots->at(i);
 		g_pLog->debug("Shared Depot %u for %u -> %llu\n", depot->depotId, depot->appId, depot->manifestId);
 	}
 
