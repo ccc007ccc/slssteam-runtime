@@ -227,6 +227,8 @@ static uint32_t hkClientUnifiedServiceTransport_SendAndRecvMsg(CClientUnifiedSer
 		ret = Hooks::CClientUnifiedServiceMethod_SendAndRecvMsg.tramp.fn(pUnifiedServiceTransport, name, send, recv, arg4);
 	}
 
+	Apps::filterLastPlayedTimes(name, recv);
+
 	g_pLog->debug
 	(
 		"%s(%p, %s, %s, %s, %p) -> %u\n",
