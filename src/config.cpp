@@ -190,6 +190,7 @@ bool CConfig::loadSettings(bool firstLoad)
 
 	appIds = getList<uint32_t>(node, "AppIds");
 	fakeOffline = getList<uint32_t>(node, "FakeOffline");
+	depotBlacklist = getList<uint32_t>(node, "DepotBlacklist");
 
 	fakeAppIds = getMap<uint32_t, uint32_t>(node, "FakeAppIds");
 	manifestIds = getMap<uint32_t, uint64_t>(node, "ManifestIds");

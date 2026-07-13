@@ -401,21 +401,30 @@ static bool hkUserAppManager_BuildDepotDependency
 	CUtlVector<DepotInfo_t>* sharedDepots,
 	void* a5,
 	uint32_t* pBuildId,
-	bool* a6
+	bool* a7
 )
 {
-	const bool success = Hooks::CUserAppManager_BuildDepotDependency.tramp.fn(a0, appId, a2, depots, sharedDepots, a5, pBuildId, a6);
+	const bool success = Hooks::CUserAppManager_BuildDepotDependency.tramp.fn(a0, appId, a2, depots, sharedDepots, a5, pBuildId, a7);
 
 	g_pLog->debug("%s(%p, %u) -> %i\n", Hooks::CUserAppManager_BuildDepotDependency.name.c_str(), a0, appId, success);
 
 	g_pLog->debug("Vec Alloc %u, Grow %u, Size %u\n", depots->memory.alloc, depots->memory.growSize, depots->size);
 
+	const auto depotBlacklist = g_config.depotBlacklist.get();
 	const auto manifestOverrides = g_config.manifestIds.get();
 
 	for(unsigned int i = 0; i < depots->size; i++)
 	{
 		const auto depot = depots->at(i);
 		g_pLog->debug("Depot %u for %u -> %llu\n", depot->depotId, depot->appId, depot->manifestId);
+
+		if (depotBlacklist.contains(depot->depotId))
+		{
+			depots->swap(i, depots->size - 1);
+			depots->size--;
+			g_pLog->debug("Removed %u\n", depot->depotId);
+			continue;
+		}
 
 		if (manifestOverrides.contains(depot->depotId))
 		{

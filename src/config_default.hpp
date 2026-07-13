@@ -56,6 +56,9 @@ FakeAppIds:
 #Use this to download older game versions or to lock a game to a specific version
 ManifestIds:
 
+#Never download these depots
+DepotBlacklist:
+
 #Custom ingame statuses. Set AppId to 0 to disable
 IdleStatus:
   AppId: 0
