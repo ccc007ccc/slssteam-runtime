@@ -22,13 +22,6 @@ CLog::~CLog()
 	}
 }
 
-void CLog::clearHistory()
-{
-	std::lock_guard lock(mutex);
-	msgHist.clear();
-	debug("Log history cleared!\n");
-}
-
 //Dirty workaround for not being able to access g_config from __log
 LogLevel CLog::getMinLevel()
 {

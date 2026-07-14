@@ -8,6 +8,7 @@
 #include <memory>
 #include <mutex>
 #include <openssl/sha.h>
+#include <shared_mutex>
 #include <sstream>
 #include <unordered_set>
 
@@ -27,7 +28,7 @@ class CLog
 {
 	std::ofstream ofstream;
 	std::unordered_set<std::string> msgHist {};
-	std::mutex mutex;
+	std::shared_mutex mutex;
 
 	constexpr const char* logLvlToStr(LogLevel& lvl)
 	{
@@ -91,7 +92,7 @@ class CLog
 			debug("system(\"%s\")\n", notifySS.str().c_str());
 		}
 
-		const auto lock = std::lock_guard(mutex);
+		const auto lock = std::unique_lock(mutex);
 
 		if (lvl == LogLevel::Once)
 		{
@@ -156,8 +157,6 @@ public:
 	{
 		__log(LogLevel::Warn, msg, args...);
 	}
-
-	void clearHistory();
 
 	//Do not include config.hpp in this header, otherwise things will break :) (proly due to recursive inclusion)
 	static LogLevel getMinLevel();
