@@ -71,6 +71,7 @@ bool CConfig::createFile()
 
 static void onFileChange()
 {
+	g_pLog->clearHistory();
 	g_config.loadSettings();
 	g_pLog->notify("Config reloaded!");
 }
@@ -343,17 +344,17 @@ bool CConfig::shouldExcludeAppId(uint32_t appId, bool ignoreAdditionalApps)
 		const int len = g_pClientApps ? g_pClientApps->getAppData(appId, "parent", chParent, sizeof(chParent)) : 0;
 		if (len > 0)
 		{
-			//g_pLog->debug("AppId %i, parent %s (%i)\n", appId, chParent, len);
+			g_pLog->once("AppId %i, parent %s (%i)\n", appId, chParent, len);
 			uint32_t parentId = std::stoul(chParent);
 
 			if (whitelist && !shouldExcludeAppId(parentId, true))
 			{
-				//g_pLog->debug("Override exclude %i with false, because parent %u isn't excluded\n", exclude, parentId);
+				g_pLog->once("Override exclude %i with false, because parent %u isn't excluded\n", exclude, parentId);
 				exclude = false;
 			}
 			else if(!whitelist && shouldExcludeAppId(parentId, true))
 			{
-				//g_pLog->debug("Override exclude %i with true, because parent %u is excluded\n", exclude, parentId);
+				g_pLog->once("Override exclude %i with true, because parent %u is excluded\n", exclude, parentId);
 				exclude = true;
 			}
 		}
