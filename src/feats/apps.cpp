@@ -3,8 +3,10 @@
 #include "../sdk/CProtoBufMsgBase.hpp"
 #include "../sdk/CSteamEngine.hpp"
 #include "../sdk/CUser.hpp"
+#include "../sdk/CUtl.hpp"
 #include "../sdk/EReleaseState.hpp"
 #include "../sdk/IClientApps.hpp"
+#include "../sdk/IClientAppManager.hpp"
 
 #include "../config.hpp"
 #include "../globals.hpp"
@@ -51,6 +53,43 @@ bool Apps::unlockApp(uint32_t appId, AppOwnershipInfo_t* info, uint32_t ownerId)
 bool Apps::unlockApp(uint32_t appId, AppOwnershipInfo_t* info)
 {
 	return unlockApp(appId, info, g_currentSteamId);
+}
+
+
+void Apps::buildDepotDependency(uint32_t appId, CUtlVector<DepotInfo_t>* depots, CUtlVector<DepotInfo_t>* sharedDepots)
+{
+	g_pLog->debug("Vec Alloc %u, Grow %u, Size %u\n", depots->memory.alloc, depots->memory.growSize, depots->size);
+
+	const auto depotBlacklist = g_config.depotBlacklist.get();
+	const auto manifestOverrides = g_config.manifestIds.get();
+
+	for(unsigned int i = 0; i < depots->size; i++)
+	{
+		const auto depot = depots->at(i);
+
+		if (depotBlacklist.contains(depot->depotId))
+		{
+			g_pLog->debug("Removing %u with %llu\n", depot->depotId, depot->manifestId);
+			depots->swap(i, depots->size - 1);
+			depots->size--;
+		}
+
+		if (manifestOverrides.contains(depot->depotId))
+		{
+			const uint64_t oldId = depot->manifestId;
+			depot->manifestId = manifestOverrides.at(depot->depotId);
+			g_pLog->debug("Overrode %u's manifest %llu with %llu\n", depot->depotId, oldId, depot->manifestId);
+		}
+
+		g_pLog->debug("Depot %u for %u -> %llu\n", depot->depotId, depot->appId, depot->manifestId);
+	}
+
+	for(unsigned int i = 0; i < sharedDepots->size; i++)
+	{
+		const auto depot = sharedDepots->at(i);
+		g_pLog->debug("Shared Depot %u for %u -> %llu\n", depot->depotId, depot->appId, depot->manifestId);
+	}
+
 }
 
 bool Apps::checkAppOwnership(uint32_t appId, AppOwnershipInfo_t* pInfo)
