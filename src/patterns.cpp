@@ -174,13 +174,13 @@ namespace Patterns
 		};
 		Pattern_t PostCallback
 		{
-			"CSteamEngine::PostCallback",
+			"CUser::PostCallback",
 			"E8 ? ? ? ? 8D 86 ? ? ? ? 83 C4 18 68 F6 01 00 00",
 			SigFollowMode::Relative
 		};
 		Pattern_t UpdateAppOwnershipTicket
 		{
-			"IClientUser::UpdateAppOwnershipTicket",
+			"CUser::UpdateAppOwnershipTicket",
 			"E8 ? ? ? ? E9 ? ? ? ? ? ? ? ? ? ? 8D 45 ? 89 45 ? EB",
 			SigFollowMode::Relative
 		};
