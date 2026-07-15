@@ -16,11 +16,26 @@
 
 std::map<uint64_t, std::unordered_set<std::string>> Updater::clientHashMap = std::map<uint64_t, std::unordered_set<std::string>>();
 
+constexpr static const char* urls[] =
+{
+	"https://raw.githubusercontent.com/AceSLS/SLSsteam/refs/heads/main/res/updates.yaml",
+	"https://cdn.jsdelivr.net/gh/AceSLS/SLSsteam/res/updates.yaml"
+};
+
 bool Updater::init()
 {
 	std::string data;
-	int res = Curl::getString("https://raw.githubusercontent.com/AceSLS/SLSsteam/refs/heads/main/res/updates.yaml", data);
-	g_pLog->info("Curl Res: %u\n", res);
+	int res;
+
+	for(const auto url : urls)
+	{
+		res = Curl::getString(url, data);
+		if (res == 0)
+		{
+			g_pLog->info("Curl Res: %u for %s\n", res, url);
+			break;
+		}
+	}
 
 	if(res != 0)
 	{
