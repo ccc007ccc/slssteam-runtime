@@ -33,7 +33,8 @@ int Curl::getString(const char* url, std::string& out)
 
 	const char* args[] =
 	{
-		"-s",
+		"--silent",
+		"--connect-timeout", "15",
 		url,
 		nullptr
 	};
@@ -88,6 +89,8 @@ int Curl::getString(const char* url, std::string& out)
 	{
 		return 1;
 	}
+
+	status = WEXITSTATUS(status);
 
 	g_pLog->debug("Exit Status: %i\n", status);
 
