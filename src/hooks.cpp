@@ -773,18 +773,30 @@ static uint32_t hkClientUser_BUpdateOwnershipTicket(void* pClientUser, uint32_t 
 	return ret;
 }
 
-static uint32_t hkClientUser_GetAppOwnershipTicketExtendedData(
+static uint32_t hkClientUser_GetAppOwnershipTicketExtendedData
+(
 	void* pClientUser,
 	uint32_t appId,
 	void* pTicket,
 	uint32_t ticketSize,
-	uint32_t* a4,
-	uint32_t* a5,
-	uint32_t* a6,
-	uint32_t* a7)
-
+	uint32_t* pOffAppId,
+	uint32_t* pOffSteamId,
+	uint32_t* pOffSig,
+	uint32_t* pSigSize
+)
 {
-	const uint32_t ret = Hooks::IClientUser_GetAppOwnershipTicketExtendedData.tramp.fn(pClientUser, appId, pTicket, ticketSize, a4, a5, a6, a7);
+	const uint32_t ret = Hooks::IClientUser_GetAppOwnershipTicketExtendedData.tramp.fn
+	(
+		pClientUser,
+		appId,
+		pTicket,
+		ticketSize,
+		pOffAppId,
+		pOffSteamId,
+		pOffSig,
+		pSigSize
+   );
+
 	g_pLog->once("%s(%u)->%u\n", Hooks::IClientUser_GetAppOwnershipTicketExtendedData.name.c_str(), appId, ret);
 
 	Ticket::getTicketOwnershipExtendedData(appId);
