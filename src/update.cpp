@@ -27,17 +27,21 @@ bool Updater::init()
 	std::string data;
 	int res;
 
+	bool downloadSuccess = false;
+
 	for(const auto url : urls)
 	{
 		res = Curl::getString(url, data);
-		if (res == 0)
+		g_pLog->info("Curl Res: %u for %s with len %i\n", res, url, data.size());
+
+		if (res == 0 && data.size() > 0) //User reported empty responses
 		{
-			g_pLog->info("Curl Res: %u for %s\n", res, url);
+			downloadSuccess = true;
 			break;
 		}
 	}
 
-	if(res != 0)
+	if(!downloadSuccess)
 	{
 		data = loadFromCache();
 		if(data.size() < 1)
