@@ -1,6 +1,5 @@
 .clangd
 .git
-.github
-bin
-obj
-zip
+/bin/
+/obj/
+/zips/

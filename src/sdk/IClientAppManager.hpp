@@ -32,8 +32,14 @@ struct DepotInfo_t
 	uint32_t depotId;		//0x0
 	uint32_t appId;			//0x4
 	uint64_t manifestId;	//0x8
-	char __pad0x10[0x10];	//0x10
+	uint64_t manifestSize;	//0x10
+	uint32_t dlcAppId;		//0x18
+	bool lcsRequired;		//0x1C
+	bool notNewTarget;		//0x1D
+	bool sharedInstall;		//0x1E
+	uint8_t reserved;		//0x1F
 }; //0x20
+static_assert(sizeof(DepotInfo_t) == 0x20, "Unexpected DepotInfo_t layout");
 
 class IClientAppManager
 {

@@ -11,9 +11,10 @@
 //Spawn an external instance of curl, read it's stdout into out and return it's exit code
 //It's necessary because SteamOS seems broken. Curling certain URLs
 //will crash inside libssl.3.so (might have to do with broken certs, idk for sure).
-int Curl::getString(const char* url, std::string& out)
+int Curl::getString(const char* url, std::string& out, uint32_t timeoutSeconds)
 {
 	g_pLog->debug("Curl::getString(%s)\n", url);
+	const std::string timeout = std::to_string(timeoutSeconds ? timeoutSeconds : 1);
 
 	int pipefd[2];
 
@@ -27,14 +28,17 @@ int Curl::getString(const char* url, std::string& out)
 
 	constexpr static const char* env[] =
 	{
-		"PATH='/usr/bin:/bin'",
+		"PATH=/usr/bin:/bin",
 		nullptr
 	};
 
 	const char* args[] =
 	{
 		"--silent",
-		"--connect-timeout", "15",
+		"--show-error",
+		"--location",
+		"--connect-timeout", timeout.c_str(),
+		"--max-time", timeout.c_str(),
 		url,
 		nullptr
 	};

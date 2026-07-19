@@ -8,6 +8,7 @@
 
 #include "yaml-cpp/yaml.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -139,6 +140,9 @@ bool CConfig::loadSettings(bool firstLoad)
 	fakeWalletBalance = getSetting<int32_t>(node, "FakeWalletBalance", 0);
 	disableCloud = getSetting<bool>(node, "DisableCloud", true);
 	disableUpdates = getSetting<bool>(node, "DisableUpdates", true);
+	enableContentHooks = getSetting<bool>(node, "EnableContentHooks", false);
+	manifestCodeUrl = getSetting<std::string>(node, "ManifestCodeURL", "");
+	manifestCodeTimeout = std::clamp(getSetting<uint32_t>(node, "ManifestCodeTimeout", 12), 1u, 60u);
 	extendedLogging = getSetting<bool>(node, "ExtendedLogging", false);
 	logLevel = getSetting<unsigned int>(node, "LogLevel", 2);
 
@@ -155,6 +159,10 @@ bool CConfig::loadSettings(bool firstLoad)
 	g_pLog->info("FakeWalletBalance: %i\n", fakeWalletBalance.get());
 	g_pLog->info("DisableCloud: %i\n", disableCloud.get());
 	g_pLog->info("DisableUpdates: %i\n", disableUpdates.get());
+	g_pLog->info("ContentRuntimeABI: 1\n");
+	g_pLog->info("EnableContentHooks: %i\n", enableContentHooks.get());
+	g_pLog->info("ManifestCodeURL: %s\n", manifestCodeUrl.get().c_str());
+	g_pLog->info("ManifestCodeTimeout: %u\n", manifestCodeTimeout.get());
 	g_pLog->info("ExtendedLogging: %i\n", extendedLogging.get());
 	g_pLog->info("LogLevel: %i\n", logLevel.get());
 
@@ -194,9 +202,43 @@ bool CConfig::loadSettings(bool firstLoad)
 
 	fakeAppIds = getMap<uint32_t, uint32_t>(node, "FakeAppIds");
 	manifestIds = getMap<uint32_t, uint64_t>(node, "ManifestIds");
+	manifestSizes = getMap<uint32_t, uint64_t>(node, "ManifestSizes");
+	depotKeys = getMap<uint32_t, std::string>(node, "DepotKeys");
 	appTokens = getMap<uint32_t, uint64_t>(node, "AppTokens");
 	gameTitles = getMap<uint32_t, std::string>(node, "GameTitles");
 	subscriptionTimestamps = getMap<uint32_t, uint32_t>(node, "SubscriptionTimestamps");
+
+	const auto injectedDepotsNode = node["InjectedDepots"];
+	if (injectedDepotsNode)
+	{
+		auto parsed = injectedDepots.empty();
+		for (auto& app : injectedDepotsNode)
+		{
+			try
+			{
+				const uint32_t appId = app.first.as<uint32_t>();
+				std::unordered_map<uint32_t, uint64_t> depots;
+				for (auto& depot : app.second)
+				{
+					const uint32_t depotId = depot.first.as<uint32_t>();
+					const uint64_t manifestId = depot.second.as<uint64_t>();
+					depots[depotId] = manifestId;
+					g_pLog->info("Injected depot %u for AppId %u -> %llu\n", depotId, appId, manifestId);
+				}
+				parsed[appId] = std::move(depots);
+			}
+			catch (...)
+			{
+				setError(ELoadError::ParsingException);
+			}
+		}
+		injectedDepots = parsed;
+	}
+	else
+	{
+		injectedDepots = std::unordered_map<uint32_t, std::unordered_map<uint32_t, uint64_t>>();
+		setError(ELoadError::MissingKey);
+	}
 
 	//Do not warn for these (yet?)
 	const auto idleStatusNode = node["IdleStatus"];

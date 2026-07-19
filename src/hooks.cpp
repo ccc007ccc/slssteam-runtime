@@ -23,6 +23,7 @@
 
 #include "feats/achievements.hpp"
 #include "feats/apps.hpp"
+#include "feats/content.hpp"
 #include "feats/dlc.hpp"
 #include "feats/misc.hpp"
 #include "feats/fakeappid.hpp"
@@ -260,12 +261,14 @@ static void hkProtoBufMsgBase_InitFromPacket(CProtoBufMsgBase* pMsg, void* pSrc)
 
 	Misc::recvMsg(pMsg);
 	Ticket::recvMsg(pMsg);
+	ContentHooks::recvMsg(pMsg);
 }
 
 static uint32_t hkProtoBufMsgBase_Send(CProtoBufMsgBase* pMsg)
 {
 	Apps::sendMsg(pMsg);
 	FakeAppIds::sendMsg(pMsg);
+	ContentHooks::sendMsg(pMsg);
 
 	const uint32_t ret = Hooks::CProtoBufMsgBase_Send.tramp.fn(pMsg);
 	g_pLog->debug("Sending ProtoBufMsg of type %u with type %s\n", pMsg->type, MemHlp::getTypeName(pMsg));
@@ -408,9 +411,9 @@ static bool hkUserAppManager_BuildDepotDependency
 	const bool success = Hooks::CUserAppManager_BuildDepotDependency.tramp.fn(a0, appId, a2, depots, sharedDepots, a5, pBuildId, a7);
 	g_pLog->debug("%s(%p, %u) -> %i\n", Hooks::CUserAppManager_BuildDepotDependency.name.c_str(), a0, appId, success);
 
-	Apps::buildDepotDependency(appId, depots, sharedDepots);
+	const bool injected = Apps::buildDepotDependency(appId, depots, sharedDepots);
 
-	return success;
+	return success || injected;
 }
 
 

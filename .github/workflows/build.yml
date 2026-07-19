@@ -1,0 +1,33 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build 32-bit image
+        run: docker build -t slssteam-build -f docker/Dockerfile docker
+
+      - name: Build audit libraries
+        run: >-
+          docker run --rm --user root
+          --mount type=bind,source="$PWD",target=/src
+          --workdir=/src slssteam-build make audit-libs
+
+      - name: Verify artifacts
+        run: |
+          file bin/SLSsteam.so bin/library-inject.so
+          file bin/SLSsteam.so | grep -q 'ELF 32-bit'
+          file bin/library-inject.so | grep -q 'ELF 32-bit'

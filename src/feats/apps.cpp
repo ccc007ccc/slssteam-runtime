@@ -13,10 +13,99 @@
 
 #include "fakeappid.hpp"
 
+#include "libmem/libmem.h"
+
 #include <cmath>
 #include <cstdint>
+#include <dlfcn.h>
 #include <mutex>
 #include <sstream>
+#include <unordered_set>
+
+namespace
+{
+	using PlatRealloc_t = void* (*)(void*, size_t);
+
+	PlatRealloc_t getSteamReallocator()
+	{
+		static PlatRealloc_t reallocator = nullptr;
+		if (reallocator)
+		{
+			return reallocator;
+		}
+
+		void* symbol = dlsym(RTLD_DEFAULT, "Plat_Realloc");
+		if (!symbol)
+		{
+			// LD_AUDIT modules live in a separate linker namespace on glibc. The
+			// allocator wrapper is exported by libtier0_s.so, but is consequently
+			// not always visible through RTLD_DEFAULT. Resolve it from the loaded
+			// module image in that case. Calling this C wrapper also avoids relying
+			// on the private IMemAlloc vtable layout.
+			lm_module_t tier0 {};
+			if (LM_FindModule("libtier0_s.so", &tier0))
+			{
+				const lm_address_t address = LM_FindSymbolAddress(&tier0, "Plat_Realloc");
+				if (address != LM_ADDRESS_BAD)
+				{
+					symbol = reinterpret_cast<void*>(address);
+				}
+			}
+		}
+
+		if (symbol)
+		{
+			reallocator = reinterpret_cast<PlatRealloc_t>(symbol);
+		}
+		return reallocator;
+	}
+
+	bool ensureDepotCapacity(CUtlVector<DepotInfo_t>* depots, uint32_t required)
+	{
+		if (!depots || depots->memory.alloc >= required)
+		{
+			return depots != nullptr;
+		}
+		const PlatRealloc_t reallocator = getSteamReallocator();
+		if (!reallocator)
+		{
+			g_pLog->notify("Unable to resolve Plat_Realloc; depot injection disabled");
+			return false;
+		}
+
+		uint32_t capacity = depots->memory.alloc ? depots->memory.alloc : 4;
+		while (capacity < required)
+		{
+			capacity *= 2;
+		}
+		void* resized = reallocator(depots->memory.base, sizeof(DepotInfo_t) * capacity);
+		if (!resized)
+		{
+			g_pLog->notify("Steam allocator failed while growing depot vector to %u entries", capacity);
+			return false;
+		}
+		depots->memory.base = reinterpret_cast<DepotInfo_t*>(resized);
+		depots->memory.alloc = capacity;
+		return true;
+	}
+
+	bool isConfiguredDepot(uint32_t appId)
+	{
+		if (g_config.depotKeys.get().contains(appId))
+		{
+			return true;
+		}
+		for (const auto& [parentId, depots] : g_config.injectedDepots.get())
+		{
+			(void)parentId;
+			if (depots.contains(appId))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+}
 
 
 bool Apps::applistRequested;
@@ -56,14 +145,19 @@ bool Apps::unlockApp(uint32_t appId, AppOwnershipInfo_t* info)
 }
 
 
-void Apps::buildDepotDependency(uint32_t appId, CUtlVector<DepotInfo_t>* depots, CUtlVector<DepotInfo_t>* sharedDepots)
+bool Apps::buildDepotDependency(uint32_t appId, CUtlVector<DepotInfo_t>* depots, CUtlVector<DepotInfo_t>* sharedDepots)
 {
+	if (!depots || !sharedDepots)
+	{
+		return false;
+	}
 	g_pLog->debug("Vec Alloc %u, Grow %u, Size %u\n", depots->memory.alloc, depots->memory.growSize, depots->size);
 
 	const auto depotBlacklist = g_config.depotBlacklist.get();
 	const auto manifestOverrides = g_config.manifestIds.get();
+	const auto manifestSizes = g_config.manifestSizes.get();
 
-	for(unsigned int i = 0; i < depots->size; i++)
+	for(unsigned int i = 0; i < depots->size;)
 	{
 		const auto depot = depots->at(i);
 
@@ -72,6 +166,7 @@ void Apps::buildDepotDependency(uint32_t appId, CUtlVector<DepotInfo_t>* depots,
 			g_pLog->debug("Removing %u with %llu\n", depot->depotId, depot->manifestId);
 			depots->swap(i, depots->size - 1);
 			depots->size--;
+			continue;
 		}
 
 		if (manifestOverrides.contains(depot->depotId))
@@ -80,8 +175,13 @@ void Apps::buildDepotDependency(uint32_t appId, CUtlVector<DepotInfo_t>* depots,
 			depot->manifestId = manifestOverrides.at(depot->depotId);
 			g_pLog->debug("Overrode %u's manifest %llu with %llu\n", depot->depotId, oldId, depot->manifestId);
 		}
+		if (manifestSizes.contains(depot->depotId))
+		{
+			depot->manifestSize = manifestSizes.at(depot->depotId);
+		}
 
-		g_pLog->debug("Depot %u for %u -> %llu\n", depot->depotId, depot->appId, depot->manifestId);
+		g_pLog->debug("Depot %u for %u -> %llu (%llu bytes)\n", depot->depotId, depot->appId, depot->manifestId, depot->manifestSize);
+		i++;
 	}
 
 	for(unsigned int i = 0; i < sharedDepots->size; i++)
@@ -89,6 +189,67 @@ void Apps::buildDepotDependency(uint32_t appId, CUtlVector<DepotInfo_t>* depots,
 		const auto depot = sharedDepots->at(i);
 		g_pLog->debug("Shared Depot %u for %u -> %llu\n", depot->depotId, depot->appId, depot->manifestId);
 	}
+
+	if (!g_config.enableContentHooks.get())
+	{
+		return false;
+	}
+	const auto allInjected = g_config.injectedDepots.get();
+	const auto appIt = allInjected.find(appId);
+	if (appIt == allInjected.end() || appIt->second.empty())
+	{
+		return false;
+	}
+
+	std::unordered_set<uint32_t> existing;
+	for (uint32_t i = 0; i < depots->size; i++)
+	{
+		existing.emplace(depots->at(i)->depotId);
+	}
+	for (uint32_t i = 0; i < sharedDepots->size; i++)
+	{
+		existing.emplace(sharedDepots->at(i)->depotId);
+	}
+
+	uint32_t missing = 0;
+	for (const auto& [depotId, manifestId] : appIt->second)
+	{
+		(void)manifestId;
+		if (!existing.contains(depotId) && !depotBlacklist.contains(depotId))
+		{
+			missing++;
+		}
+	}
+	if (!missing || !ensureDepotCapacity(depots, depots->size + missing))
+	{
+		return false;
+	}
+
+	uint32_t added = 0;
+	for (const auto& [depotId, configuredManifest] : appIt->second)
+	{
+		if (existing.contains(depotId) || depotBlacklist.contains(depotId))
+		{
+			continue;
+		}
+		const auto overrideIt = manifestOverrides.find(depotId);
+		const uint64_t manifestId = overrideIt != manifestOverrides.end() ? overrideIt->second : configuredManifest;
+		DepotInfo_t depot {};
+		depot.depotId = depotId;
+		depot.appId = appId;
+		depot.manifestId = manifestId;
+		const auto sizeIt = manifestSizes.find(depotId);
+		depot.manifestSize = sizeIt != manifestSizes.end() ? sizeIt->second : 0;
+		depot.dlcAppId = 0;
+		depot.lcsRequired = false;
+		depot.notNewTarget = false;
+		depot.sharedInstall = false;
+		depots->memory.base[depots->size++] = depot;
+		existing.emplace(depotId);
+		added++;
+		g_pLog->once("Injected Depot %u for AppId %u with manifest %llu (%llu bytes)\n", depotId, appId, manifestId, depot.manifestSize);
+	}
+	return added > 0;
 
 }
 
@@ -133,7 +294,7 @@ bool Apps::checkAppOwnership(uint32_t appId, AppOwnershipInfo_t* pInfo)
 		pInfo->purchaseTime = times.at(appId);
 	}
 
-	if (!g_config.isAddedAppId(appId))
+	if (!g_config.isAddedAppId(appId) && !isConfiguredDepot(appId))
 	{
 		return false;
 	}
@@ -281,6 +442,10 @@ bool Apps::shouldDisableCDKey(uint32_t appId)
 
 bool Apps::shouldDisableUpdates(uint32_t appId)
 {
+	if (g_config.enableContentHooks.get() && g_config.injectedDepots.get().contains(appId))
+	{
+		return false;
+	}
 	if (!g_config.disableUpdates.get())
 	{
 		return false;

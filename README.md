@@ -1,6 +1,45 @@
 # **SLSsteam - Steamclient Modification for Linux**
 ![](https://github.com/AceSLS/SLSsteam/blob/dev/res/banner.png?raw=true "SLSsteam")
 
+## Linux content-pipeline fork
+
+This AGPL-3.0-only fork is paired with
+[`ccc007ccc/slssteam-manager`](https://github.com/ccc007ccc/slssteam-manager) and retains the
+upstream SLSsteam installation layout. It adds the runtime pieces required for configured
+manifests to enter Steam's Linux content pipeline:
+
+- missing Depot dependency injection through `BuildDepotDependency`;
+- installed-size propagation through manager-provided `ManifestSizes`;
+- runtime DepotKey responses for messages 5438/5439;
+- asynchronous `ContentServerDirectory.GetManifestRequestCode#1` response replacement;
+- manifest ID pinning for existing and injected Depot entries.
+
+The control-plane/runtime boundary is documented in
+[`slssteam-manager/ARCHITECTURE.md`](https://github.com/ccc007ccc/slssteam-manager/blob/main/ARCHITECTURE.md).
+
+The hooks are disabled unless `EnableContentHooks: yes` is present. The manager writes
+`InjectedDepots`, `ManifestSizes`, `DepotKeys`, and `ManifestIds` together while preserving the
+config inode.
+Manifest request codes use OpenSteamTool-, WUDRM-, and SteamRun-compatible providers unless a
+custom `ManifestCodeURL` is configured.
+
+Depot-vector growth uses the exported `libtier0_s.so` `Plat_Realloc` wrapper. Do not call the
+private `g_pMemAllocSteam` C++ vtable directly: its ABI includes destructor slots and is not a
+stable allocation interface.
+
+Build the 32-bit runtime with the included container definition. Installation continues to use
+the upstream `setup.sh install` flow and only writes user-owned Steam/SLSsteam paths:
+
+```bash
+podman build -t slssteam-build -f docker/Dockerfile docker
+podman run --rm --userns=keep-id \
+  --mount type=bind,source="$PWD",target=/src --workdir=/src \
+  localhost/slssteam-build:latest make build
+```
+
+Before installation, fully exit Steam and back up `~/.local/share/SLSsteam`, the user Steam
+desktop entry, and `~/.config/SLSsteam/config.yaml`.
+
 ## Index
 
 1. [Getting started](#getting-started)

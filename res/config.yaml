@@ -56,6 +56,27 @@ FakeAppIds:
 #Use this to download older game versions or to lock a game to a specific version
 ManifestIds:
 
+# Optional installed byte size for each overridden/injected manifest. The
+# manager derives this from the depot manifest so Steam does not show 0 B.
+ManifestSizes:
+
+# Experimental Linux content pipeline hooks. These are disabled by default.
+# InjectedDepots maps a parent AppID to DepotID: ManifestID pairs. Unlike
+# ManifestIds, these entries may be appended when Steam returned no depots.
+EnableContentHooks: no
+InjectedDepots:
+
+# Runtime depot decryption keys. Values must be 64 hexadecimal characters.
+DepotKeys:
+
+# Optional custom manifest request-code endpoint. Supported placeholders:
+# {app_id}, {depot_id}, {manifest_id}. The response must be a decimal uint64
+# or JSON containing a decimal string in a "content" field. When empty, the
+# runtime tries the OpenSteamTool, WUDRM and SteamRun-compatible public sources.
+ManifestCodeURL: ""
+# Total lookup deadline in seconds; values are clamped to 1-60.
+ManifestCodeTimeout: 12
+
 #Never download these depots
 DepotBlacklist:
 

@@ -21,7 +21,7 @@ namespace Apps
 	bool unlockApp(uint32_t appId, AppOwnershipInfo_t* info, uint32_t ownerId);
 	bool unlockApp(uint32_t appId, AppOwnershipInfo_t* info);
 
-	void buildDepotDependency(uint32_t appId, CUtlVector<DepotInfo_t>* depots, CUtlVector<DepotInfo_t>* sharedDepots);
+	bool buildDepotDependency(uint32_t appId, CUtlVector<DepotInfo_t>* depots, CUtlVector<DepotInfo_t>* sharedDepots);
 	bool checkAppOwnership(uint32_t appId, AppOwnershipInfo_t* info);
 	void getSubscribedApps(uint32_t* appList, uint32_t size, uint32_t& count);
 	void parseProductInfoFromResponse(CMsgClientPICSProductInfoResponse* msg);
