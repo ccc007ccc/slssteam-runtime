@@ -4,6 +4,10 @@ SLSDIR="$HOME/.local/share/SLSsteam"
 SLSPATH="$SLSDIR/path"
 SLSLIB="$SLSDIR/SLSsteam.so"
 SLSAUDIT="LD_AUDIT=\"$SLSDIR/library-inject.so:$SLSDIR/SLSsteam.so\""
+SLSAUDIT_VALUE="$SLSDIR/library-inject.so:$SLSDIR/SLSsteam.so"
+
+STEAM_LAUNCHER_DROPIN="$HOME/.config/systemd/user/steam-launcher.service.d/30-slssteam.conf"
+STEAM_AUTOSTART_DROPIN="$HOME/.config/systemd/user/app-steam@autostart.service.d/30-slssteam.conf"
 
 FLATPAK_APP_ID="com.valvesoftware.Steam"
 FLATPAK_SLSDIR="$HOME/.var/app/$FLATPAK_APP_ID/.local/share/SLSsteam"
@@ -15,6 +19,9 @@ uninstall()
 	rm -v "$HOME/.config/fish/SLSsteam.fish" 2> /dev/null
 	rm -v "$HOME/.local/share/applications/steam.desktop" 2> /dev/null
 	rm -v "$HOME/.local/share/applications/steam-native.desktop" 2> /dev/null
+	rm -v "$STEAM_LAUNCHER_DROPIN" 2> /dev/null
+	rm -v "$STEAM_AUTOSTART_DROPIN" 2> /dev/null
+	systemctl --user daemon-reload 2> /dev/null || true
 	rm -rvf "$SLSDIR"
 	echo "Uninstall done!"
 }
@@ -80,6 +87,22 @@ install_desktop_file()
 	sed -i "s|^Exec=/|Exec=env $SLSAUDIT /|" "$USR_APP_DIR/$NAME"
 
 	echo "Created $USR_APP_DIR/$NAME"
+}
+
+install_steamos_user_services()
+{
+	if [ ! -f /usr/lib/systemd/user/steam-launcher.service ]; then
+		return 0
+	fi
+
+	for DROPIN in "$STEAM_LAUNCHER_DROPIN" "$STEAM_AUTOSTART_DROPIN"; do
+		mkdir -p "$(dirname "$DROPIN")" || return 1
+		printf '[Service]\nEnvironment="LD_AUDIT=%s"\n' "$SLSAUDIT_VALUE" > "$DROPIN" || return 1
+		echo "Created $DROPIN"
+	done
+
+	systemctl --user daemon-reload || return 1
+	echo "Configured SteamOS user services without modifying steam-jupiter."
 }
 
 install_path()
@@ -180,6 +203,7 @@ install_all()
 	install_desktop_file steam
 	#No steam-runtime.desktop (atleast on my Arch install...)
 	install_desktop_file steam-native
+	install_steamos_user_services
 
 	echo "Install script done! If any wrappers or .desktop files have been created it was successfull."
 }

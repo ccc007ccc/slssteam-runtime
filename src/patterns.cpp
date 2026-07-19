@@ -17,8 +17,14 @@ Pattern_t::Pattern_t(const char* name, const char* pattern, MemHlp::SigFollowMod
 
 Pattern_t::Pattern_t(const char* name, const char* pattern, MemHlp::SigFollowMode followMode, std::vector<uint8_t> prologue, lm_module_t* module)
 	:
+	Pattern_t(name, std::vector<std::string> { pattern }, followMode, prologue, module)
+{
+}
+
+Pattern_t::Pattern_t(const char* name, std::vector<std::string> signatures, MemHlp::SigFollowMode followMode, std::vector<uint8_t> prologue, lm_module_t* module)
+	:
 	name(name),
-	pattern(pattern),
+	signatures(signatures),
 	followMode(followMode),
 	prologue(prologue),
 	module(module)
@@ -28,8 +34,16 @@ Pattern_t::Pattern_t(const char* name, const char* pattern, MemHlp::SigFollowMod
 
 bool Pattern_t::find()
 {
-	address = MemHlp::searchSignature(name.c_str(), pattern.c_str(), module ? *module : g_modSteamClient , followMode, &prologue[0], prologue.size());
-	return address != LM_ADDRESS_BAD;
+	for (const auto& signature : signatures)
+	{
+		address = MemHlp::searchSignature(name.c_str(), signature.c_str(), module ? *module : g_modSteamClient, followMode, prologue.data(), prologue.size());
+		if (address != LM_ADDRESS_BAD)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool Patterns::init()
@@ -142,7 +156,9 @@ namespace Patterns
 		Pattern_t RequestInternetServerList
 		{
 			"CSteamMatchmakingServers::RequestInternetServerList",
-			"C7 04 24 50 03 00 00 E8 ? ? ? ? 5A 89 45 ? 59 FF B6 ? ? ? ? FF B6 ? ? ? ? FF B6 ? ? ? ? FF B6 ? ? ? ? FF B6 ? ? ? ? 6A 01",
+			// The allocation size changed from 0x350 to 0x354 in Steam Deck
+			// public beta 1784145295. Keep the low byte variable across both builds.
+			"C7 04 24 ? 03 00 00 E8 ? ? ? ? 5A 89 45 ? 59 FF B6 ? ? ? ? FF B6 ? ? ? ? FF B6 ? ? ? ? FF B6 ? ? ? ? FF B6 ? ? ? ? 6A 01",
 			SigFollowMode::PrologueUpwards,
 			std::vector<uint8_t> { 0xe8, 0x57, 0xe5, 0x89, 0x55 }
 		};
@@ -230,7 +246,12 @@ namespace Patterns
 		Pattern_t RunIPCFrame
 		{
 			"IClientRemoteStorage::RunIPCFrame",
-			"E8 ? ? ? ? 8B 85 ? ? ? ? 83 C4 10 3D ? E8 2F 87",
+			std::vector<std::string>
+			{
+				"E8 ? ? ? ? 8B 85 ? ? ? ? 83 C4 10 3D ? E8 2F 87",
+				// Dispatch identifier used by Steam Deck public beta 1784145295.
+				"E8 ? ? ? ? 8B 85 ? ? ? ? 83 C4 10 3D ? DD 12 87"
+			},
 			SigFollowMode::PrologueUpwards,
 			std::vector<uint8_t> { 0x56, 0x57, 0xe5, 0x89, 0x55 }
 		};
@@ -342,4 +363,3 @@ namespace Patterns
 
 	std::vector<Pattern_t*> patterns;
 }
-

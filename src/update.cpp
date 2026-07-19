@@ -127,6 +127,14 @@ bool Updater::verifySafeModeHash()
 		std::string sha256 = Utils::getFileSHA256(path.c_str());
 		g_pLog->info("steamclient.so hash is %s\n", sha256.c_str());
 
+		// Steam Deck public beta 1784145295. This build is verified against the
+		// signatures in patterns.cpp by the Linux content-pipeline fork.
+		if (sha256 == "b756a016e09ffa64fd1bbeab4ea5092b485f99607eedf7e1cfe71379aef9d82d")
+		{
+			g_pLog->info("steamclient.so hash matched a locally verified build\n");
+			return true;
+		}
+
 		if (!clientHashMap.contains(VERSION))
 		{
 			return false;

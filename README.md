@@ -40,6 +40,11 @@ podman run --rm --userns=keep-id \
 Before installation, fully exit Steam and back up `~/.local/share/SLSsteam`, the user Steam
 desktop entry, and `~/.config/SLSsteam/config.yaml`.
 
+On SteamOS, `setup.sh install` also creates user-level systemd drop-ins for
+`steam-launcher.service` and the KDE Steam autostart unit. This keeps `LD_AUDIT` scoped to Steam,
+works in both SteamOS and desktop sessions, survives immutable-system updates, and does not patch
+`/usr/bin/steam-jupiter`.
+
 ## Index
 
 1. [Getting started](#getting-started)
