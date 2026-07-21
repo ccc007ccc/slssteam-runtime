@@ -9,24 +9,25 @@
 #include <memory>
 
 
-Pattern_t::Pattern_t(const char* name, const char* pattern, MemHlp::SigFollowMode followMode, lm_module_t* module)
+Pattern_t::Pattern_t(const char* name, const char* pattern, MemHlp::SigFollowMode followMode, lm_module_t* module, bool required)
 	:
-	Pattern_t(name, pattern, followMode, std::vector<uint8_t>(), module)
+	Pattern_t(name, pattern, followMode, std::vector<uint8_t>(), module, required)
 {
 }
 
-Pattern_t::Pattern_t(const char* name, const char* pattern, MemHlp::SigFollowMode followMode, std::vector<uint8_t> prologue, lm_module_t* module)
+Pattern_t::Pattern_t(const char* name, const char* pattern, MemHlp::SigFollowMode followMode, std::vector<uint8_t> prologue, lm_module_t* module, bool required)
 	:
-	Pattern_t(name, std::vector<std::string> { pattern }, followMode, prologue, module)
+	Pattern_t(name, std::vector<std::string> { pattern }, followMode, prologue, module, required)
 {
 }
 
-Pattern_t::Pattern_t(const char* name, std::vector<std::string> signatures, MemHlp::SigFollowMode followMode, std::vector<uint8_t> prologue, lm_module_t* module)
+Pattern_t::Pattern_t(const char* name, std::vector<std::string> signatures, MemHlp::SigFollowMode followMode, std::vector<uint8_t> prologue, lm_module_t* module, bool required)
 	:
 	name(name),
 	signatures(signatures),
 	followMode(followMode),
 	prologue(prologue),
+	required(required),
 	module(module)
 {
 	Patterns::patterns.emplace_back(this);
@@ -54,7 +55,14 @@ bool Patterns::init()
 	{
 		if (!pattern->find())
 		{
-			found = false;
+			if (pattern->required)
+			{
+				found = false;
+			}
+			else
+			{
+				g_pLog->warn("Optional pattern %s is unavailable; its hook is disabled.\n", pattern->name.c_str());
+			}
 		}
 	}
 
@@ -357,7 +365,8 @@ namespace Patterns
 			"8B 85 ? ? ? ? 8B 40 ? 85 C0 0F 84 ? ? ? ? 39 46",
 			SigFollowMode::PrologueUpwards,
 			std::vector<uint8_t> { 0x57, 0xe5, 0x89, 0x55 },
-			&g_modSteamUI
+			&g_modSteamUI,
+			false
 		};
 	}
 

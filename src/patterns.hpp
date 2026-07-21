@@ -15,13 +15,14 @@ public:
 	const std::vector<std::string> signatures;
 	const MemHlp::SigFollowMode followMode;
 	std::vector<uint8_t> prologue;
+	const bool required;
 
 	lm_address_t address;
 	lm_module_t* module;
 
-	Pattern_t(const char* name, const char* pattern, MemHlp::SigFollowMode followMode, lm_module_t* module = nullptr);
-	Pattern_t(const char* name, const char* pattern, MemHlp::SigFollowMode followMode, std::vector<uint8_t> prologue, lm_module_t* module = nullptr);
-	Pattern_t(const char* name, std::vector<std::string> signatures, MemHlp::SigFollowMode followMode, std::vector<uint8_t> prologue, lm_module_t* module = nullptr);
+	Pattern_t(const char* name, const char* pattern, MemHlp::SigFollowMode followMode, lm_module_t* module = nullptr, bool required = true);
+	Pattern_t(const char* name, const char* pattern, MemHlp::SigFollowMode followMode, std::vector<uint8_t> prologue, lm_module_t* module = nullptr, bool required = true);
+	Pattern_t(const char* name, std::vector<std::string> signatures, MemHlp::SigFollowMode followMode, std::vector<uint8_t> prologue, lm_module_t* module = nullptr, bool required = true);
 	//~CPattern();
 
 	bool find();

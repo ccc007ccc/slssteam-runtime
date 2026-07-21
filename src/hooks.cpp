@@ -1098,6 +1098,8 @@ bool Hooks::setup()
 	g_pLog->debug("Hooks::setup()\n");
 
 	IClientUser_GetSteamId = Patterns::IClientUser::GetSteamId.address;
+	const bool pingResponseAvailable =
+		Patterns::ISteamMatchmakingPingResponse::ServerResponded.address != LM_ADDRESS_BAD;
 
 	bool succeeded =
 		TraceIPC.setup(Patterns::TraceIPC, &hkTraceIPC)
@@ -1136,12 +1138,20 @@ bool Hooks::setup()
 		&& IClientUser_BUpdateAppOwnershipTicket.setup(Patterns::IClientUser::BUpdateAppOwnershipTicket, hkClientUser_BUpdateOwnershipTicket)
 		&& IClientUser_GetAppOwnershipTicketExtendedData.setup(Patterns::IClientUser::GetAppOwnershipTicketExtendedData, hkClientUser_GetAppOwnershipTicketExtendedData)
 		&& IClientUser_IsUserSubscribedAppInTicket.setup(Patterns::IClientUser::IsUserSubscribedAppInTicket, &hkClientUser_IsUserSubscribedAppInTicket)
-		&& IClientUser_RequiresLegacyCDKey.setup(Patterns::IClientUser::RequiresLegacyCDKey, hkClientUser_RequiresLegacyCDKey)
+		&& IClientUser_RequiresLegacyCDKey.setup(Patterns::IClientUser::RequiresLegacyCDKey, hkClientUser_RequiresLegacyCDKey);
 
-		&& ISteamMatchmakingPingResponse_ServerResponded.setup(Patterns::ISteamMatchmakingPingResponse::ServerResponded, hkSteamMatchmakingPingResponse_ServerResponded);
+	if (succeeded && pingResponseAvailable)
+	{
+		succeeded = ISteamMatchmakingPingResponse_ServerResponded.setup(
+			Patterns::ISteamMatchmakingPingResponse::ServerResponded,
+			hkSteamMatchmakingPingResponse_ServerResponded
+		);
+	}
 
-	Hooks::place();
-	//This is unnecessary but I'll keep this for now in case I wanna improve error checks
+	if (succeeded)
+	{
+		Hooks::place();
+	}
 	return succeeded;
 }
 
@@ -1192,7 +1202,10 @@ void Hooks::place()
 	IClientUser_IsUserSubscribedAppInTicket.place();
 	IClientUser_RequiresLegacyCDKey.place();
 
-	ISteamMatchmakingPingResponse_ServerResponded.place();
+	if (Patterns::ISteamMatchmakingPingResponse::ServerResponded.address != LM_ADDRESS_BAD)
+	{
+		ISteamMatchmakingPingResponse_ServerResponded.place();
+	}
 
 	createAndPlaceSteamIdHook();
 }

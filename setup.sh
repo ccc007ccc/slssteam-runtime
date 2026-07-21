@@ -8,6 +8,7 @@ SLSAUDIT_VALUE="$SLSDIR/library-inject.so:$SLSDIR/SLSsteam.so"
 
 STEAM_LAUNCHER_DROPIN="$HOME/.config/systemd/user/steam-launcher.service.d/30-slssteam.conf"
 STEAM_AUTOSTART_DROPIN="$HOME/.config/systemd/user/app-steam@autostart.service.d/30-slssteam.conf"
+STEAM_DESKTOP_DROPIN="$HOME/.config/systemd/user/app-steam@.service.d/30-slssteam.conf"
 
 FLATPAK_APP_ID="com.valvesoftware.Steam"
 FLATPAK_SLSDIR="$HOME/.var/app/$FLATPAK_APP_ID/.local/share/SLSsteam"
@@ -21,6 +22,7 @@ uninstall()
 	rm -v "$HOME/.local/share/applications/steam-native.desktop" 2> /dev/null
 	rm -v "$STEAM_LAUNCHER_DROPIN" 2> /dev/null
 	rm -v "$STEAM_AUTOSTART_DROPIN" 2> /dev/null
+	rm -v "$STEAM_DESKTOP_DROPIN" 2> /dev/null
 	systemctl --user daemon-reload 2> /dev/null || true
 	rm -rvf "$SLSDIR"
 	echo "Uninstall done!"
@@ -95,7 +97,7 @@ install_steamos_user_services()
 		return 0
 	fi
 
-	for DROPIN in "$STEAM_LAUNCHER_DROPIN" "$STEAM_AUTOSTART_DROPIN"; do
+	for DROPIN in "$STEAM_LAUNCHER_DROPIN" "$STEAM_AUTOSTART_DROPIN" "$STEAM_DESKTOP_DROPIN"; do
 		mkdir -p "$(dirname "$DROPIN")" || return 1
 		printf '[Service]\nEnvironment="LD_AUDIT=%s"\n' "$SLSAUDIT_VALUE" > "$DROPIN" || return 1
 		echo "Created $DROPIN"

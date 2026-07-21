@@ -41,9 +41,9 @@ Before installation, fully exit Steam and back up `~/.local/share/SLSsteam`, the
 desktop entry, and `~/.config/SLSsteam/config.yaml`.
 
 On SteamOS, `setup.sh install` also creates user-level systemd drop-ins for
-`steam-launcher.service` and the KDE Steam autostart unit. This keeps `LD_AUDIT` scoped to Steam,
-works in both SteamOS and desktop sessions, survives immutable-system updates, and does not patch
-`/usr/bin/steam-jupiter`.
+`steam-launcher.service`, the KDE Steam autostart unit, and KDE-created Steam desktop-launch units.
+This keeps `LD_AUDIT` scoped to Steam, works when launching Steam from a desktop shortcut, survives
+immutable-system updates, and does not patch `/usr/bin/steam-jupiter`.
 
 ## Index
 

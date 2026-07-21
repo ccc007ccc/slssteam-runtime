@@ -1,3 +1,7 @@
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include "apps.hpp"
 
 #include "../sdk/CProtoBufMsgBase.hpp"
@@ -18,6 +22,7 @@
 #include <cmath>
 #include <cstdint>
 #include <dlfcn.h>
+#include <filesystem>
 #include <mutex>
 #include <sstream>
 #include <unordered_set>
@@ -38,10 +43,28 @@ namespace
 		if (!symbol)
 		{
 			// LD_AUDIT modules live in a separate linker namespace on glibc. The
-			// allocator wrapper is exported by libtier0_s.so, but is consequently
-			// not always visible through RTLD_DEFAULT. Resolve it from the loaded
-			// module image in that case. Calling this C wrapper also avoids relying
-			// on the private IMemAlloc vtable layout.
+			// allocator wrapper is exported by libtier0_s.so, but is not always
+			// visible through RTLD_DEFAULT. Ask glibc for the already-loaded module
+			// in Steam's base namespace before falling back to libmem's module scan.
+			// Calling this C wrapper also avoids relying on the private IMemAlloc
+			// vtable layout.
+			const auto tier0Path = std::filesystem::path(g_modSteamClient.path)
+				.parent_path()
+				.append("libtier0_s.so");
+			void* handle = dlmopen(LM_ID_BASE, tier0Path.c_str(), RTLD_NOW | RTLD_NOLOAD);
+			if (handle)
+			{
+				symbol = dlsym(handle, "Plat_Realloc");
+				dlclose(handle);
+			}
+
+			// Some older glibc builds do not permit an audit module to obtain a base
+			// namespace handle. Retain the direct module-image fallback for them.
+			if (symbol)
+			{
+				reallocator = reinterpret_cast<PlatRealloc_t>(symbol);
+				return reallocator;
+			}
 			lm_module_t tier0 {};
 			if (LM_FindModule("libtier0_s.so", &tier0))
 			{
