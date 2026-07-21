@@ -705,6 +705,19 @@ static bool hkClientUtils_GetOfflineMode(void* pClientUtils)
 	return ret;
 }
 
+static bool hkClientUtils_GetAPICallResult(void* pClientUtils, uint64_t call, void* callback, int32_t callbackSize, int32_t expectedCallback, bool* failed)
+{
+	const bool ret = Hooks::IClientUtils_GetAPICallResult.originalFn.fn(
+		pClientUtils, call, callback, callbackSize, expectedCallback, failed);
+	if (callbackSize >= 0 && expectedCallback >= 0 && Ticket::getEncryptedTicketCallResult(
+		call, callback, static_cast<uint32_t>(callbackSize), static_cast<uint32_t>(expectedCallback), failed))
+	{
+		g_pLog->debug("Overrode EncryptedAppTicket callback result for call %llu\n", call);
+		return true;
+	}
+	return ret;
+}
+
 static void hkClientUtils_RunIPCFrame(void* pClientUtils, void* a1, void* a2, void* a3)
 {
 	static bool hooked = false;
@@ -717,9 +730,11 @@ static void hkClientUtils_RunIPCFrame(void* pClientUtils, void* a1, void* a2, vo
 
 		Hooks::IClientUtils_GetAppId.setup(vft, VFTIndexes::IClientUtils::GetAppId, hkClientUtils_GetAppId);
 		Hooks::IClientUtils_GetOfflineMode.setup(vft, VFTIndexes::IClientUtils::GetOfflineMode, hkClientUtils_GetOfflineMode);
+		Hooks::IClientUtils_GetAPICallResult.setup(vft, VFTIndexes::IClientUtils::GetAPICallResult, hkClientUtils_GetAPICallResult);
 
 		Hooks::IClientUtils_GetAppId.place();
 		Hooks::IClientUtils_GetOfflineMode.place();
+		Hooks::IClientUtils_GetAPICallResult.place();
 
 		g_pLog->debug("IClientUtils->vft at %p\n", vft->vtable);
 
@@ -798,9 +813,62 @@ static uint32_t hkClientUser_GetAppOwnershipTicketExtendedData
 		pOffSteamId,
 		pOffSig,
 		pSigSize
-   );
+	);
 
 	g_pLog->once("%s(%u)->%u\n", Hooks::IClientUser_GetAppOwnershipTicketExtendedData.name.c_str(), appId, ret);
+
+	Ticket::AppOwnershipTicket ticket {};
+	const uint32_t denuvoOwner = g_config.getDenuvoGameOwner(appId);
+	bool credentialTicket = false;
+	bool haveTicket = false;
+	if (denuvoOwner)
+	{
+		haveTicket = Ticket::getAppOwnershipTicket(appId, ticket, Ticket::AppTicketSource::CacheOnly);
+		credentialTicket = haveTicket && ticket.steamId == denuvoOwner;
+		if (!credentialTicket)
+		{
+			g_pLog->debug("No matching credential AppTicket for Denuvo AppId %u; using local fallback\n", appId);
+			haveTicket = Ticket::getAppOwnershipTicket(appId, ticket, Ticket::AppTicketSource::ForgeOnly);
+		}
+	}
+	else
+	{
+		haveTicket = Ticket::getAppOwnershipTicket(appId, ticket, Ticket::AppTicketSource::CacheThenForge);
+	}
+
+	if (haveTicket)
+	{
+		if (!pTicket || ticket.data.size() > ticketSize)
+		{
+			g_pLog->debug("AppOwnershipTicket for %u does not fit destination buffer (%zu > %u)\n",
+				appId, ticket.data.size(), ticketSize);
+			return ret;
+		}
+
+		if (credentialTicket && !Ticket::armSteamIdSpoof(appId, ticket.steamId))
+		{
+			g_pLog->debug("Credential AppTicket authorization window ended for %u; using local fallback\n", appId);
+			if (!Ticket::getAppOwnershipTicket(appId, ticket, Ticket::AppTicketSource::ForgeOnly) ||
+				!pTicket || ticket.data.size() > ticketSize)
+			{
+				return ret;
+			}
+			credentialTicket = false;
+		}
+		else if (!denuvoOwner)
+		{
+			Ticket::armSteamIdSpoof(appId, ticket.steamId);
+		}
+
+		std::memcpy(pTicket, ticket.data.data(), ticket.data.size());
+		if (pOffAppId) *pOffAppId = ticket.appIdOffset;
+		if (pOffSteamId) *pOffSteamId = ticket.steamIdOffset;
+		if (pOffSig) *pOffSig = ticket.signatureOffset;
+		if (pSigSize) *pSigSize = ticket.signatureSize;
+		g_pLog->debug("Provided %s AppOwnershipTicket for %u (%zu physical bytes, %u reported bytes)\n",
+			credentialTicket ? "credential" : "local fallback", appId, ticket.data.size(), ticket.totalSize);
+		return ticket.totalSize;
+	}
 
 	Ticket::getTicketOwnershipExtendedData(appId);
 
@@ -841,17 +909,10 @@ static uint32_t hkClientUser_GetSteamId(uint32_t steamId)
 		g_currentSteamId = steamId;
 	}
 
-	Ticket::SavedTicket ticket = Ticket::getCachedEncryptedTicket(FakeAppIds::getRealAppIdForCurrentPipe());
-
-	if (ticket.steamId)
+	const uint32_t currentAppId = FakeAppIds::getRealAppIdForCurrentPipe();
+	if (const uint32_t authorizedSteamId = Ticket::consumeSteamIdSpoof(currentAppId))
 	{
-		steamId = ticket.steamId;
-	}
-	else if (Ticket::oneTimeSteamIdSpoof)
-	{
-		//One time spoof should be enough for this type
-		steamId = Ticket::oneTimeSteamIdSpoof;
-		Ticket::oneTimeSteamIdSpoof = 0;
+		steamId = authorizedSteamId;
 	}
 
 	return steamId;
@@ -880,9 +941,54 @@ static bool hkClientUser_RequiresLegacyCDKey(void* pClientUser, uint32_t appId, 
 	return requiresKey;
 }
 
+static uint64_t hkClientUser_RequestEncryptedAppTicket(void* pClientUser, void* data, int32_t dataSize)
+{
+	const uint32_t appId = FakeAppIds::getRealAppIdForCurrentPipe();
+	const uint64_t call = Hooks::IClientUser_RequestEncryptedAppTicket.originalFn.fn(pClientUser, data, dataSize);
+	if (call && !Ticket::getEncryptedTicketData(appId).empty())
+	{
+		Ticket::recordEncryptedTicketCall(call, appId);
+		g_pLog->debug("RequestEncryptedAppTicket(%u) -> tracked call %llu\n", appId, call);
+	}
+	return call;
+}
+
+static bool hkClientUser_GetEncryptedAppTicket(void* pClientUser, void* destination, int32_t destinationSize, uint32_t* ticketSize)
+{
+	const uint32_t appId = FakeAppIds::getRealAppIdForCurrentPipe();
+	const bool ret = Hooks::IClientUser_GetEncryptedAppTicket.originalFn.fn(
+		pClientUser, destination, destinationSize, ticketSize);
+	const std::string ticket = Ticket::getEncryptedTicketData(appId);
+	if (ticket.empty())
+	{
+		return ret;
+	}
+
+	if (!ticketSize) return false;
+	*ticketSize = static_cast<uint32_t>(ticket.size());
+	if (!destination || destinationSize < 0 || static_cast<size_t>(destinationSize) < ticket.size()) return false;
+	std::memcpy(destination, ticket.data(), ticket.size());
+	g_pLog->debug("GetEncryptedAppTicket(%u) -> %zu bytes\n", appId, ticket.size());
+	return true;
+}
+
 static void hkClientUser_RunIPCFrame(void* pClientUser, void* a1, void* a2, void* a3)
 {
 	g_pClientUser = reinterpret_cast<IClientUser*>(pClientUser);
+	static bool hooked = false;
+	if (!hooked)
+	{
+		std::shared_ptr<lm_vmt_t> vft = std::make_shared<lm_vmt_t>();
+		LM_VmtNew(*reinterpret_cast<lm_address_t**>(pClientUser), vft.get());
+		Hooks::IClientUser_RequestEncryptedAppTicket.setup(
+			vft, VFTIndexes::IClientUser::RequestEncryptedAppTicket, hkClientUser_RequestEncryptedAppTicket);
+		Hooks::IClientUser_GetEncryptedAppTicket.setup(
+			vft, VFTIndexes::IClientUser::GetEncryptedAppTicket, hkClientUser_GetEncryptedAppTicket);
+		Hooks::IClientUser_RequestEncryptedAppTicket.place();
+		Hooks::IClientUser_GetEncryptedAppTicket.place();
+		g_pLog->debug("Installed encrypted AppTicket hooks on IClientUser vtable %p\n", vft->vtable);
+		hooked = true;
+	}
 
 	//std::shared_ptr<lm_vmt_t> vft = std::make_shared<lm_vmt_t>();
 	//LM_VmtNew(*reinterpret_cast<lm_address_t**>(pClientUser), vft.get());
@@ -1070,6 +1176,8 @@ namespace Hooks
 	DetourHook<IClientUser_GetAppOwnershipTicketExtendedData_t> IClientUser_GetAppOwnershipTicketExtendedData;
 	DetourHook<IClientUser_IsUserSubscribedAppInTicket_t> IClientUser_IsUserSubscribedAppInTicket;
 	DetourHook<IClientUser_RequiresLegacyCDKey_t> IClientUser_RequiresLegacyCDKey;
+	VFTHook<IClientUser_RequestEncryptedAppTicket_t> IClientUser_RequestEncryptedAppTicket("IClientUser::RequestEncryptedAppTicket");
+	VFTHook<IClientUser_GetEncryptedAppTicket_t> IClientUser_GetEncryptedAppTicket("IClientUser::GetEncryptedAppTicket");
 
 	VFTHook<IClientAppManager_BIsDlcEnabled_t> IClientAppManager_BIsDlcEnabled("IClientAppManager::BIsDlcEnabled");
 	VFTHook<IClientAppManager_GetAppUpdateInfo_t> IClientAppManager_GetAppUpdateInfo("IClientAppManager::GetUpdateInfo");
@@ -1083,6 +1191,7 @@ namespace Hooks
 
 	VFTHook<IClientUtils_GetAppId_t> IClientUtils_GetAppId("IClientUtils::GetAppId");
 	VFTHook<IClientUtils_GetOfflineMode_t> IClientUtils_GetOfflineMode("IClientUtils::GetOfflineMode");
+	VFTHook<IClientUtils_GetAPICallResult_t> IClientUtils_GetAPICallResult("IClientUtils::GetAPICallResult");
 
 
 	//steamui.so
@@ -1265,6 +1374,11 @@ void Hooks::remove()
 	IClientRemoteStorage_IsCloudEnabledForApp.remove();
 
 	IClientUtils_GetAppId.remove();
+	IClientUtils_GetOfflineMode.remove();
+	IClientUtils_GetAPICallResult.remove();
+
+	IClientUser_RequestEncryptedAppTicket.remove();
+	IClientUser_GetEncryptedAppTicket.remove();
 	
 	//TODO: Remove jmp
 	if (hkNakedGetSteamId != LM_ADDRESS_BAD)

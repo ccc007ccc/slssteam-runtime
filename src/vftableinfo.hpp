@@ -37,11 +37,14 @@ namespace VFTIndexes
 	{
 		constexpr int BLoggedOn = 4;
 		constexpr int GetSteamID = 10;
+		constexpr int RequestEncryptedAppTicket = 115;
+		constexpr int GetEncryptedAppTicket = 116;
 	}
 
 	namespace IClientUtils
 	{
 		constexpr int GetOfflineMode = 17;
 		constexpr int GetAppId = 19;
+		constexpr int GetAPICallResult = 23;
 	}
 }

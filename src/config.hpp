@@ -47,6 +47,8 @@ public:
 	MTVariable<std::unordered_set<uint32_t>> addedAppIds;
 	MTVariable<std::unordered_map<uint32_t, CDlcData>> dlcData;
 	MTVariable<std::unordered_map<uint32_t, uint64_t>> appTokens;
+	MTVariable<std::unordered_map<uint32_t, std::string>> appTickets;
+	MTVariable<std::unordered_map<uint32_t, std::string>> encryptedAppTickets;
 	MTVariable<std::unordered_set<uint32_t>> fakeOffline;
 	MTVariable<std::unordered_map<uint32_t, uint32_t>> fakeAppIds;
 	MTVariable<std::unordered_map<uint32_t, uint64_t>> manifestIds;

@@ -169,6 +169,8 @@ bool CConfig::loadSettings(bool firstLoad)
 	std::lock_guard appsChanged(appsChangedMutex);
 	auto prevAppIds = addedAppIds.get();
 	auto _addedAppIds = getList<uint32_t>(node, "AdditionalApps");
+	appTickets = getMap<uint32_t, std::string>(node, "AppTickets");
+	encryptedAppTickets = getMap<uint32_t, std::string>(node, "EncryptedAppTickets");
 
 	if (!firstLoad)
 	{

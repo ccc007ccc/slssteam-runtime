@@ -113,6 +113,9 @@ namespace Hooks
 	typedef uint32_t(*IClientUser_GetAppOwnershipTicketExtendedData_t)(void*, uint32_t, void*, uint32_t, uint32_t*, uint32_t*, uint32_t*, uint32_t*);
 	typedef uint8_t(*IClientUser_IsUserSubscribedAppInTicket_t)(void*, uint32_t, uint32_t, uint32_t, uint32_t);
 	typedef bool(*IClientUser_RequiresLegacyCDKey_t)(void*, uint32_t, uint32_t*);
+	typedef uint64_t(*IClientUser_RequestEncryptedAppTicket_t)(void*, void*, int32_t);
+	typedef bool(*IClientUser_GetEncryptedAppTicket_t)(void*, void*, int32_t, uint32_t*);
+	typedef bool(*IClientUtils_GetAPICallResult_t)(void*, uint64_t, void*, int32_t, int32_t, bool*);
 
 	typedef bool(*IClientUtils_GetOfflineMode_t)(void*);
 
@@ -153,6 +156,9 @@ namespace Hooks
 	extern DetourHook<IClientUser_GetAppOwnershipTicketExtendedData_t> IClientUser_GetAppOwnershipTicketExtendedData;
 	extern DetourHook<IClientUser_IsUserSubscribedAppInTicket_t> IClientUser_IsUserSubscribedAppInTicket;
 	extern DetourHook<IClientUser_RequiresLegacyCDKey_t> IClientUser_RequiresLegacyCDKey;
+	extern VFTHook<IClientUser_RequestEncryptedAppTicket_t> IClientUser_RequestEncryptedAppTicket;
+	extern VFTHook<IClientUser_GetEncryptedAppTicket_t> IClientUser_GetEncryptedAppTicket;
+	extern VFTHook<IClientUtils_GetAPICallResult_t> IClientUtils_GetAPICallResult;
 
 	typedef bool(*IClientAppManager_BIsDlcEnabled_t)(void*, uint32_t, uint32_t, void*);
 	typedef bool(*IClientAppManager_GetAppUpdateInfo_t)(void*, uint32_t, uint32_t*);

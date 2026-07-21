@@ -10,9 +10,9 @@ static const char* defaultConfig = R"(#Example AppIds Config for those not famil
 #    FirstDlcAppId: "Dlc Name"
 #    SecondDlcAppId: "Dlc Name"
 
-#Example of DenuvoGames:
+#Example of DenuvoGames. Keys are 32-bit Steam account IDs (SteamID low 32 bits).
 #DenuvoGames:
-#  SteamId:
+#  123456789:
 #    -  AppId1
 #    -  AppId2
 
@@ -36,6 +36,14 @@ AppIds:
 #AppIds on this list will automatically get added to your AppIds setting aswell, but only for the initial check.
 #It will get ignored in exclusion checks for the parent AppId
 AdditionalApps:
+
+#Raw App Ownership Tickets as lowercase or uppercase hexadecimal strings.
+#These are the Linux credential backend equivalent of OpenSteamTool setAppTicket().
+AppTickets:
+
+#Raw encrypted app tickets as hexadecimal strings.
+#These are the Linux credential backend equivalent of OpenSteamTool setETicket().
+EncryptedAppTickets:
 
 #Extra Data for Dlcs belonging to a specific AppId. Only needed
 #when the App you're playing is hit by Steams 64 DLC limit
@@ -91,7 +99,8 @@ GameTitles:
 #Override purchase time stamps
 SubscriptionTimestamps:
 
-#Blocks games from unlocking on wrong accounts
+#Blocks games from unlocking on wrong accounts and enables the per-pipe
+#credential-ticket authorization window for those AppIds.
 DenuvoGames:
 
 #Automatically grab Achievement schemas from Steams CDN which makes them always up to date

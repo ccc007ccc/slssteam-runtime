@@ -23,6 +23,39 @@ config inode.
 Manifest request codes use OpenSteamTool-, WUDRM-, and SteamRun-compatible providers unless a
 custom `ManifestCodeURL` is configured.
 
+OpenSteamTool-compatible authorization tickets use SLSsteam's YAML configuration as the Linux
+credential backend. Add the app to `AdditionalApps`, then provide the raw hexadecimal values:
+
+```yaml
+AdditionalApps:
+  - 1361510
+AppTickets:
+  1361510: "14000000..."
+EncryptedAppTickets:
+  1361510: "01000000..."
+DenuvoGames:
+  123456789:
+    - 1361510
+```
+
+Explicit AppTickets take priority over the disk cache. When no explicit ticket exists, the
+runtime can derive the local fallback ticket from cached AppID 7 data. The SteamID embedded in
+the selected ownership ticket is applied only for the following ownership authorization call.
+`DenuvoGames` keys are 32-bit Steam account IDs (the low 32 bits of the ticket's 64-bit SteamID).
+For those apps, a matching credential ticket opens a per-`HSteamPipe` authorization window; the
+next `GetSteamID` consumes it and closes the window. Later requests fall back to the local AppID 7
+ticket until the app is launched again.
+
+Encrypted tickets keep Steam's real `SteamAPICall_t`. The runtime records that handle, replaces
+the `EncryptedAppTicketResponse_t` result in `IClientUtils::GetAPICallResult`, and serves the
+configured bytes from `IClientUser::GetEncryptedAppTicket`. This preserves Steam's normal callback
+dispatch instead of manufacturing an async handle that Steam does not know about.
+
+OpenSteamTool's package refresh maps to the existing Linux runtime path: configuration reloads
+queue `AdditionalApps` additions/removals, `Apps::runIPCFrame()` requests new app info, and
+`AppLicensesChanged_t` callbacks refresh removals. No Windows `PackageInfo` or Registry mutation is
+used.
+
 Depot-vector growth uses the exported `libtier0_s.so` `Plat_Realloc` wrapper. Do not call the
 private `g_pMemAllocSteam` C++ vtable directly: its ABI includes destructor slots and is not a
 stable allocation interface.

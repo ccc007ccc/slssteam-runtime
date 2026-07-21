@@ -16,6 +16,7 @@
 #include "../globals.hpp"
 
 #include "fakeappid.hpp"
+#include "ticket.hpp"
 
 #include "libmem/libmem.h"
 
@@ -288,7 +289,7 @@ bool Apps::checkAppOwnership(uint32_t appId, AppOwnershipInfo_t* pInfo)
 	const uint32_t denuvoOwner = g_config.getDenuvoGameOwner(appId);
 
 	//Do not modify Denuvo enabled Games
-	if (denuvoOwner && denuvoOwner != g_currentSteamId)
+	if (denuvoOwner && denuvoOwner != g_currentSteamId && Ticket::getSpoofSteamId(appId) != denuvoOwner)
 	{
 		//Would love to log the SteamId, but for users anonymity I won't
 		g_pLog->once("Skipping %u because it's a Denuvo game from someone else\n", appId);
